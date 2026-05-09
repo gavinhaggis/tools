@@ -217,7 +217,7 @@ textarea:focus, input:focus { border-color: var(--yellow); box-shadow: 0 0 0 3px
   margin-bottom: 12px;
 }
 
-.manual-table-wrap { margin-top: 16px; }
+.manual-table-wrap { margin-top: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .manual-count { font-size: 0.78rem; font-weight: 600; color: var(--brand); margin-bottom: 8px; }
 
 .manual-table {
@@ -668,6 +668,8 @@ td.roster-actions {
   line-height: 1.6;
 }
 
+#roster-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
 /* ── Utilities ───────────────────────────────────────── */
 .hidden { display: none !important; }
 
@@ -686,6 +688,10 @@ td.roster-actions {
   body { padding: 12px; }
   .card { padding: 16px; }
   .column-cards { grid-template-columns: 1fr 1fr; }
+  .assign-select { width: 100%; }
+  .app-header-inner { flex-wrap: wrap; }
+  .mode-toggle-btn { order: 3; margin-top: 8px; }
+  .app-header-inner > a { order: 2; margin-left: auto; }
 }
 
 </style>
@@ -701,15 +707,15 @@ td.roster-actions {
       </div>
       <button id="modeToggleBtn" class="btn-ghost mode-toggle-btn">⚙ Advanced</button>
       <a href="../index.html" style="margin-left:12px;opacity:.45;transition:opacity .2s;line-height:0;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='.45'" title="gav.fi tools">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="32" viewBox="0 0 12 8" shape-rendering="crispEdges">
-          <rect x="4" y="0" width="4" height="1" fill="#f5c842"/>
-          <rect x="3" y="1" width="6" height="1" fill="#f5c842"/>
-          <rect x="2" y="2" width="2" height="1" fill="#f5c842"/><rect x="5" y="2" width="2" height="1" fill="#111"/><rect x="8" y="2" width="2" height="1" fill="#f5c842"/>
-          <rect x="2" y="3" width="8" height="1" fill="#f5c842"/>
-          <rect x="3" y="4" width="2" height="1" fill="#f5c842"/><rect x="6" y="4" width="1" height="1" fill="#e05c2a"/><rect x="7" y="4" width="2" height="1" fill="#f5c842"/>
-          <rect x="3" y="5" width="6" height="1" fill="#f5c842"/>
-          <rect x="2" y="6" width="2" height="1" fill="#f5c842"/><rect x="8" y="6" width="2" height="1" fill="#f5c842"/>
-          <rect x="2" y="7" width="2" height="1" fill="#f5c842"/><rect x="8" y="7" width="2" height="1" fill="#f5c842"/>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges" style="image-rendering:pixelated">
+          <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+          <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+          <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+          <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+          <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+          <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+          <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+          <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
         </svg>
       </a>
     </div>
