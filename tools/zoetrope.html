@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zoetrope Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #222034;
+    --surface: #222034;
+    --border: #2a2a2a;
+    --accent: #ffce10;
+    --accent2: #ff3c00;
+    --text: #f0f0f0;
+    --muted: #cccbcb;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'pangolin', cursive;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  header {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    background: var(--surface);
+  }
+
+  header h1 {
+    font-family: 'pangolin', cursive;
+    font-size: 2.2rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  header span {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .panel {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 4px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.over {
+    border-color: var(--accent);
+    background: rgba(232,255,0,0.04);
+  }
+
+  .drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+
+  .drop-zone .icon { font-size: 2rem; margin-bottom: 8px; }
+  .drop-zone p { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+  .drop-zone strong { color: var(--text); }
+
+  label.row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  label.row span { display: flex; justify-content: space-between; align-items: center; }
+  label.row span em { color: var(--accent); font-style: normal; font-weight: 700; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    outline: none;
+    border-radius: 2px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  input[type=number] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    border-radius: 3px;
+    width: 100%;
+    outline: none;
+  }
+  input[type=number]:focus { border-color: var(--accent); }
+
+  .divider { border: none; border-top: 1px solid var(--border); }
+
+  button {
+    font-family: 'pangolin', cursive;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 3px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    width: 100%;
+  }
+  .btn-primary:hover { background: #fff; }
+  .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    width: 100%;
+  }
+  .btn-secondary:hover { background: var(--accent2); color: #fff; }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .preview-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 32px;
+    gap: 20px;
+    position: relative;
+    overflow: auto;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    background: repeating-conic-gradient(#1a1a1a 0% 25%, #111 0% 50%) 0 0 / 20px 20px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  .canvas-wrap {
+    flex-shrink: 0;
+  }
+
+  .preview-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .rpm-preset {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    border-radius: 3px;
+  }
+  .rpm-preset:hover { border-color: var(--accent); color: var(--accent); }
+  .rpm-preset.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+  .anim-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 20px;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+  }
+  .anim-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .anim-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  .rpm-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    min-width: 90px;
+    text-align: center;
+  }
+
+  .status {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  .thumb-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+
+  .thumb {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #1a1a1a;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .thumb:hover { border-color: var(--accent); }
+
+  .info-box {
+    background: rgba(232,255,0,0.06);
+    border: 1px solid rgba(232,255,0,0.2);
+    border-radius: 3px;
+    padding: 10px 12px;
+    font-size: 0.65rem;
+    line-height: 1.7;
+    color: #aaa;
+  }
+  .info-box strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ZOETROPE</h1>
+  <span>Strip Generator - 33⅓ RPM - 4000px Export</span>
+</header>
+
+<div class="panel">
+  <div>
+    <div class="section-label">Source Image</div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="icon">⬆</div>
+      <p><strong>Drop image here</strong><br>or click to browse<br><br>PNG with transparency supported</p>
+    </div>
+    <div class="thumb-row" id="thumbRow" style="margin-top:8px;"></div>
+  </div>
+
+  <hr class="divider">
+
+  <label class="row">
+    <span>Frames <em id="framesVal">54</em></span>
+    <input type="range" id="framesSlider" min="6" max="54" step="1" value="54">
+  </label>
+
+  <label class="row">
+    <span>Circle Radius (px at 4000px) <em id="radiusVal">1600</em></span>
+    <input type="range" id="radiusSlider" min="400" max="1900" step="50" value="1600">
+  </label>
+
+  <label class="row">
+    <span>Image Scale <em id="scaleVal">0.85</em></span>
+    <input type="range" id="scaleSlider" min="0.2" max="2.0" step="0.05" value="0.85">
+  </label>
+
+  <label class="row">
+    <span>Y Offset (px at 4000px) <em id="yoffVal">0</em></span>
+    <input type="range" id="yoffSlider" min="-400" max="400" step="10" value="0">
+  </label>
+
+  <hr class="divider">
+
+  <div class="info-box">
+    <strong>How it works:</strong><br>
+    Each frame is placed along the circle path. Only the X/Y position changes — <strong>no rotation</strong> is applied to the image. At 33⅓ RPM the frames blur into animation.
+  </div>
+
+  <button class="btn-primary" id="generateBtn" disabled>Generate Strip</button>
+  <button class="btn-secondary" id="exportBtn" disabled>Export 4000px PNG</button>
+</div>
+
+<div class="preview-area">
+  <div class="preview-controls">
+    <button class="anim-btn" id="animBtn">▶ Preview Spin</button>
+    <div class="rpm-display" id="rpmDisplay">33.3 RPM</div>
+    <div style="display:flex;gap:8px;">
+      <button class="rpm-preset active" data-rpm="33.3" id="btn33">33⅓</button>
+      <button class="rpm-preset" data-rpm="45" id="btn45">45</button>
+      <button class="rpm-preset" data-rpm="55" id="btn55">55</button>
+    </div>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="previewCanvas"></canvas>
+  </div>
+  <div class="status" id="status">Upload an image to begin</div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let sourceImg = null;
+let stripCanvas = null;      // the full 4000px canvas
+let animFrame = null;
+let spinning = false;
+let spinAngle = 0;
+let lastTs = null;
+
+const OUTPUT_SIZE = 4000;    // export resolution
+
+// ─── Elements ─────────────────────────────────────────────────────────────────
+const fileInput    = document.getElementById('fileInput');
+const dropZone     = document.getElementById('dropZone');
+const thumbRow     = document.getElementById('thumbRow');
+const framesSlider = document.getElementById('framesSlider');
+const radiusSlider = document.getElementById('radiusSlider');
+const scaleSlider  = document.getElementById('scaleSlider');
+const yoffSlider   = document.getElementById('yoffSlider');
+const framesVal    = document.getElementById('framesVal');
+const radiusVal    = document.getElementById('radiusVal');
+const scaleVal     = document.getElementById('scaleVal');
+const yoffVal      = document.getElementById('yoffVal');
+const generateBtn  = document.getElementById('generateBtn');
+const exportBtn    = document.getElementById('exportBtn');
+const previewCanvas= document.getElementById('previewCanvas');
+const animBtn      = document.getElementById('animBtn');
+const rpmDisplay   = document.getElementById('rpmDisplay');
+const statusEl     = document.getElementById('status');
+
+let currentRpm = 33.3;
+
+// ─── Slider live labels ────────────────────────────────────────────────────────
+framesSlider.oninput = () => { framesVal.textContent = framesSlider.value; };
+radiusSlider.oninput = () => { radiusVal.textContent = radiusSlider.value; };
+scaleSlider.oninput  = () => { scaleVal.textContent  = (+scaleSlider.value).toFixed(2); };
+yoffSlider.oninput   = () => { yoffVal.textContent   = yoffSlider.value; };
+
+// ─── RPM preset buttons ────────────────────────────────────────────────────────
+document.querySelectorAll('.rpm-preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.rpm-preset').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRpm = parseFloat(btn.dataset.rpm);
+    rpmDisplay.textContent = currentRpm + ' RPM';
+  });
+});
+
+// ─── File upload ───────────────────────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadFile(f);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      sourceImg = img;
+      generateBtn.disabled = false;
+      statusEl.textContent = `Loaded: ${img.width}×${img.height}px — click Generate`;
+      addThumb(ev.target.result);
+      // auto generate
+      generateStrip();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addThumb(src) {
+  thumbRow.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'thumb';
+  d.style.backgroundImage = `url(${src})`;
+  thumbRow.appendChild(d);
+}
+
+// ─── Core: generate zoetrope strip ────────────────────────────────────────────
+generateBtn.addEventListener('click', generateStrip);
+
+function generateStrip() {
+  if (!sourceImg) return;
+
+  const frames  = parseInt(framesSlider.value);
+  const radius  = parseInt(radiusSlider.value);   // in 4000px space
+  const imgScale= parseFloat(scaleSlider.value);
+  const yOff    = parseInt(yoffSlider.value);      // in 4000px space
+
+  const size   = OUTPUT_SIZE;
+  const cx     = size / 2;
+  const cy     = size / 2;
+
+  // Determine drawn image dimensions (scaled)
+  const aspect = sourceImg.width / sourceImg.height;
+  let dw, dh;
+  // Base size: fit within a "slot" which is roughly the arc spacing
+  const slotAngle = (2 * Math.PI) / frames;
+  const slotWidth = 2 * radius * Math.sin(slotAngle / 2) * imgScale;
+  dw = slotWidth;
+  dh = dw / aspect;
+
+  // Create the 4000px canvas
+  const c = document.createElement('canvas');
+  c.width = size;
+  c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
+
+  // Optional: draw guide circle (very faint, can be removed)
+  // ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  // ctx.lineWidth = 2;
+  // ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.stroke();
+
+  for (let i = 0; i < frames; i++) {
+    // Angle: start at top (-π/2), go clockwise
+    const angle = -Math.PI / 2 + (2 * Math.PI * i) / frames;
+
+    // Position on circle — only X/Y changes, NO rotation
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle) + yOff;
+
+    // Draw image centered at (x, y) — NO ctx.rotate()
+    ctx.drawImage(sourceImg, x - dw / 2, y - dh / 2, dw, dh);
+  }
+
+  stripCanvas = c;
+  exportBtn.disabled = false;
+
+  // Only measure & size the canvas once — not on every slider regeneration
+  if (previewW === 0) sizePreviewCanvas();
+  renderPreview(c);
+  statusEl.textContent = `Strip generated — ${frames} frames on r=${radius}px circle`;
+}
+
+// ─── Preview ──────────────────────────────────────────────────────────────────
+let previewW = 0;
+let previewH = 0;
+
+function sizePreviewCanvas() {
+  // Measure from the stable outer container, not the canvas's own parent
+  const area = document.querySelector('.preview-area');
+  const pad = 64; // 32px padding each side
+  const maxW = area.clientWidth - pad;
+  const maxH = Math.floor(window.innerHeight * 0.65);
+  // Strip is always square (OUTPUT_SIZE x OUTPUT_SIZE)
+  const size = Math.min(maxW, maxH);
+  previewW = size;
+  previewH = size;
+  previewCanvas.width  = previewW;
+  previewCanvas.height = previewH;
+  previewCanvas.style.width  = previewW + 'px';
+  previewCanvas.style.height = previewH + 'px';
+}
+
+function renderPreview(src) {
+  const ctx = previewCanvas.getContext('2d');
+  ctx.clearRect(0, 0, previewW, previewH);
+  ctx.drawImage(src, 0, 0, previewW, previewH);
+}
+
+// ─── Spin preview ─────────────────────────────────────────────────────────────
+animBtn.addEventListener('click', () => {
+  if (!stripCanvas) return;
+  if (spinning) {
+    spinning = false;
+    cancelAnimationFrame(animFrame);
+    animBtn.classList.remove('active');
+    animBtn.textContent = '▶ Preview Spin';
+    renderPreview(stripCanvas);
+    return;
+  }
+  spinning = true;
+  spinAngle = 0;
+  lastTs = null;
+  animBtn.classList.add('active');
+  animBtn.textContent = '⏹ Stop';
+  animFrame = requestAnimationFrame(spinLoop);
+});
+
+function spinLoop(ts) {
+  if (!spinning) return;
+  if (lastTs === null) lastTs = ts;
+  const dt = Math.min((ts - lastTs) / 1000, 0.05); // cap dt to avoid jumps
+  lastTs = ts;
+
+  spinAngle += (currentRpm / 60) * 2 * Math.PI * dt;
+
+  drawSpinFrame();
+  animFrame = requestAnimationFrame(spinLoop);
+}
+
+function drawSpinFrame() {
+  if (!stripCanvas) return;
+
+  const ctx = previewCanvas.getContext('2d');
+  ctx.clearRect(0, 0, previewW, previewH);
+
+  ctx.save();
+  ctx.translate(previewW / 2, previewH / 2);
+  ctx.rotate(spinAngle);
+  ctx.drawImage(stripCanvas, -previewW / 2, -previewH / 2, previewW, previewH);
+  ctx.restore();
+}
+
+// ─── Export ────────────────────────────────────────────────────────────────────
+exportBtn.addEventListener('click', () => {
+  if (!stripCanvas) return;
+  statusEl.textContent = 'Exporting…';
+  stripCanvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'zoetrope-strip-4000px.png';
+    a.click();
+    URL.revokeObjectURL(url);
+    statusEl.textContent = 'Exported!';
+  }, 'image/png');
+});
+
+// ─── Auto-regenerate on slider change ─────────────────────────────────────────
+[framesSlider, radiusSlider, scaleSlider, yoffSlider].forEach(s => {
+  s.addEventListener('input', () => { if (sourceImg) generateStrip(); });
+});
+</script>
+
+<style>.mav-badge{position:fixed;bottom:14px;left:14px;z-index:9999;opacity:.28;transition:opacity .2s;line-height:0;}.mav-badge:hover{opacity:1;}</style>
+<a href="../index.html" class="mav-badge" aria-label="gav.fi tools">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges">
+    <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+    <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+    <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+    <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+    <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+    <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+    <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+    <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
+  </svg>
+</a>
+</body>
+</html>

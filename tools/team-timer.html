@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medieval Team Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pangolin', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2f211c 0%, #311c0c 50%, #110902 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #e5e1d7;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow-x: hidden;
+            padding: 2vw 2vw 2vw 2vw;
+        }
+
+        .progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg,#FFC107 0%, #FF9800 100%);
+            opacity: 0.5;
+            z-index: -1;
+            transition: height 0.1s linear;
+            pointer-events: none;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            min-width: 0;
+            height: 100%;
+            padding: 2vw 2vw 2vw 2vw;
+            margin: 0 auto;
+            /* Prevent touching frame edges */
+            box-sizing: border-box;
+        }
+
+        .setup {
+            background: linear-gradient(145deg, rgba(139, 69, 19, 0.3), rgba(101, 67, 33, 0.3));
+            border: 3px solid #8b4513;
+            border-radius: 20px;
+            padding: clamp(10px, 3vw, 30px);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .setup h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            color: #eae4c4;
+        }
+
+        .setup-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: clamp(10px, 2vw, 25px) 0;
+            gap: clamp(10px, 2vw, 30px);
+        }
+
+        .setup-row label {
+            font-size: clamp(1em, 2.5vw, 1.2em);
+            font-weight: bold;
+            flex: 1;
+            text-align: left;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .setup-row input {
+            padding: clamp(6px, 1.5vw, 12px);
+            border: 2px solid #8b4513;
+            border-radius: 10px;
+            font-size: clamp(1em, 2vw, 1.1em);
+            text-align: center;
+            background: #f4e4bc;
+            color: #333;
+            flex: 0 0 100px;
+            font-family: 'Pangolin', sans-serif;
+            min-width: 60px;
+            max-width: 120px;
+        }
+
+        .teams-setup {
+            margin: 3px 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: clamp(8px, 2vw, 18px);
+            border: 2px solid #654321;
+        }
+
+        .teams-setup h3 {
+            color: #f1dc69;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .team-config {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            gap: clamp(5px, 1vw, 15px);
+            background: rgba(139, 69, 19, 0.2);
+            padding: clamp(3px, 1vw, 10px);
+            border-radius: 10px;
+            border: 1px solid #8b4513;
+        }
+
+        .team-number {
+            font-weight: bold;
+            color: #e9be24;
+            min-width: 24px;
+            font-size: clamp(1em, 2vw, 1.1em);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .emoji-select {
+            font-size: clamp(1.5em, 4vw, 2em);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #e9be24;
+            min-width: 40px;
+        }
+
+        .team-name-input {
+            flex: 1;
+            padding: clamp(5px, 1vw, 10px);
+            border: 2px solid #654321;
+            border-radius: 8px;
+            background: #f4e4bc;
+            color: #333;
+            font-family: 'Pangolin', sans-serif;
+            font-size: clamp(0.9em, 2vw, 1em);
+        }
+
+        .turn-order {
+            margin-top: 10px;
+            padding: clamp(1px, 1.5vw, 12px);
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            background-color: #a2580f;
+        }
+
+        .turn-order h4 {
+            color: #fff09e;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .turn-order-display {
+            font-size: clamp(1.1em, 3vw, 1.5em);
+            display: flex;
+            justify-content: center;
+            gap: clamp(px, 1vw, 12px);
+            flex-wrap: wrap;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #653e22, #ffab58);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: clamp(12px, 3vw, 20px) clamp(24px, 8vw, 40px);
+            font-size: clamp(1em, 3vw, 1.3em);
+            font-weight: bold;
+            color: #ffd700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: clamp(5px, 2vw, 20px);
+            font-family: 'Pangolin', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            background: linear-gradient(45deg, #a0522d, #8b4513);
+        }
+
+        .game-screen {
+            display: none;
+            text-align: center;
+            padding: clamp(10px, 3vw, 30px);
+            box-sizing: border-box;
+        }
+
+        .turn-order-top {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 69, 19, 0.9);
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: clamp(6px, 2vw, 20px) clamp(10px, 4vw, 30px);
+            font-size: clamp(0.8em, 2vw, 1em);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .turn-indicator {
+            opacity: 0.4;
+        }
+
+        .turn-indicator.active {
+            opacity: 1;
+            text-shadow: 0 0 15px #ffd700;
+        }
+
+        .current-team {
+            font-size: clamp(2em, 8vw, 4em);
+            margin-bottom: 10px;
+            margin-top: clamp(30px, 10vw, 80px);
+            margin-bottom: clamp(6px, 2vw, 10px);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .team-name {
+            font-size: clamp(1.2em, 4vw, 2em);
+            font-weight: bold;
+            margin-bottom: clamp(12px, 4vw, 30px);
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        .timer-display {
+            font-size: clamp(2.5em, 10vw, 6em);
+            font-weight: bold;
+            margin: clamp(10px, 4vw, 30px) 0;
+            font-family: 'Pangolin', monospace;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            color: #ffd700;
+        }
+
+        .timer-btn {
+            background: linear-gradient(45deg, #8b4513, #654321);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: clamp(10px, 4vw, 20px) clamp(30px, 12vw, 60px);
+            font-size: clamp(1em, 4vw, 1.5em);
+            font-weight: bold;
+            color: #ffd700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: clamp(10px, 3vw, 20px);
+            min-width: 120px;
+            min-height: 48px;
+            font-family: 'Pangolin', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .timer-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .timer-btn.stop {
+            background: linear-gradient(45deg, #8b0000, #654321);
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: clamp(10px, 3vw, 20px);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: clamp(10px, 3vw, 30px) 0;
+            border: 2px solid #8b4513;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg,#FFC107, #FF9800);
+            border-radius: 8px;
+            transition: width 0.1s linear;
+        }
+
+        .alarm {
+            animation: flash 0.5s infinite;
+        }
+
+        @keyframes flash {
+            0%, 50% { 
+                background: linear-gradient(135deg, #8b0000 0%, #ff4444 50%, #8b0000 100%);
+                color: #ffffff;
+            }
+            51%, 100% { 
+                background: linear-gradient(135deg, #ffffff 0%, #ffdddd 50%, #ffffff 100%);
+                color: #8b0000;
+            }
+        }
+
+        .back-btn {
+            background: rgba(139, 69, 19, 0.5);
+            border: 2px solid #8b4513;
+            border-radius: 10px;
+            padding: clamp(6px, 2vw, 12px) clamp(12px, 4vw, 20px);
+            color: #f4e4bc;
+            cursor: pointer;
+            margin-top: clamp(10px, 2vw, 20px);
+            font-size: clamp(0.9em, 2vw, 1em);
+            font-family: 'Pangolin', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .back-btn:hover {
+            background: rgba(139, 69, 19, 0.7);
+        }
+
+        /* Responsive tweaks for small screens */
+        @media (max-width: 600px) {
+            .container {
+                padding: 3vw 1vw 3vw 1vw;
+            }
+            .setup, .game-screen {
+                padding: 2vw 1vw 2vw 1vw;
+            }
+            .timer-display {
+                font-size: clamp(2em, 8vw, 4em);
+            }
+            .current-team {
+                font-size: clamp(1.5em, 6vw, 3em);
+                margin-top: clamp(20px, 6vw, 60px);
+            }
+            .team-name {
+                font-size: clamp(1em, 3vw, 1.5em);
+            }
+            .turn-order-top {
+                font-size: clamp(0.8em, 2vw, 1em);
+                padding: clamp(5px, 1vw, 8px) clamp(8px, 2vw, 15px);
+            }
+            .team-config {
+                gap: 0px;
+            }
+            .team-config input {
+                width: 100%;
+            }
+        }
+
+        @media (max-height: 400px) {
+            .container, .setup, .game-screen {
+                padding: 1vw !important;
+            }
+            .timer-display {
+                font-size: clamp(1.2em, 5vw, 3em);
+            }
+            .current-team {
+                font-size: clamp(1em, 4vw, 2em);
+                margin-top: clamp(10px, 2vw, 30px);
+            }
+            .team-name {
+                font-size: clamp(0.8em, 2vw, 1.2em);
+            }
+            .turn-order-top {
+                font-size: clamp(0.7em, 1.5vw, 1em);
+                padding: clamp(4px, 1vw, 8px) clamp(6px, 2vw, 12px);
+            }
+        }
+
+        /* Prevent horizontal scroll on tiny screens */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="setup" id="setup">
+            <h1>⚔️ Turn timer</h1>
+            
+            <div class="setup-row">
+                <label for="timeLimit">Time Limit (seconds):</label>
+                <input type="number" id="timeLimit" value="60" min="10" max="300">
+            </div>
+            
+            <div class="setup-row">
+                <label for="numTeams">Number of Teams:</label>
+                <input type="number" id="numTeams" value="2" min="2" max="12" onchange="updateTeamSetup()">
+            </div>
+
+            <div class="teams-setup">
+                <h3>🏰 Teams 🏰</h3>
+                <div id="teamConfigs"></div>
+                
+                <div class="turn-order">
+                    <h4>⚡ Turn Order</h4>
+                    <div class="turn-order-display" id="turnOrderPreview"></div>
+                </div>
+            </div>
+            
+            <button class="start-btn" onclick="startGame()"> 🗡️ Start 🛡️</button>
+        </div>
+
+        <div class="game-screen" id="gameScreen">
+            <div class="progress-overlay" id="progressOverlay"></div>
+            <div class="turn-order-top" id="turnOrderTop"></div>
+            
+            <div class="current-team" id="currentTeamEmoji">🦁</div>
+            <div class="team-name" id="currentTeamName">Team Lion</div>
+            
+            <div class="timer-display" id="timerDisplay">60</div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <button class="timer-btn" id="timerBtn" onclick="toggleTimer()">⚔️ START BATTLE ⚔️</button>
+            
+            <button class="back-btn" onclick="backToSetup()">🏰 Back</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            timeLimit: 60,
+            teams: [],
+            currentTeam: 0,
+            timeRemaining: 60,
+            isRunning: false,
+            isAlarmActive: false,
+            timerInterval: null,
+            alarmInterval: null,
+            wakeLock: null,
+            audioContext: null,
+            audioInitialized: false
+        };
+
+        // Initialize audio system
+        function initializeAudio() {
+            if (!gameState.audioContext) {
+                try {
+                    gameState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Web Audio API not supported:', e);
+                    return false;
+                }
+            }
+            
+            // Resume context if suspended (common on mobile)
+            if (gameState.audioContext.state === 'suspended') {
+                gameState.audioContext.resume().catch(e => console.log('Audio resume failed:', e));
+            }
+            
+            gameState.audioInitialized = true;
+            return true;
+        }
+
+        function playBeep() {
+            if (!gameState.audioInitialized || !gameState.audioContext) {
+                return;
+            }
+
+            try {
+                // Ensure context is running
+                if (gameState.audioContext.state !== 'running') {
+                    gameState.audioContext.resume();
+                }
+
+                const oscillator = gameState.audioContext.createOscillator();
+                const gainNode = gameState.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(gameState.audioContext.destination);
+                
+                // Medieval horn-like sound
+                oscillator.frequency.setValueAtTime(600, gameState.audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, gameState.audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0, gameState.audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, gameState.audioContext.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, gameState.audioContext.currentTime + 0.3);
+                
+                oscillator.start(gameState.audioContext.currentTime);
+                oscillator.stop(gameState.audioContext.currentTime + 0.3);
+                
+                // Clean up
+                oscillator.onended = () => {
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                };
+            } catch (e) {
+                console.log('Beep failed:', e);
+            }
+        }
+
+        function createFallbackBeep() {
+            try {
+                // Create a data URL for a simple beep sound
+                const beepData = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfAz2V3vLReC0FJHfH8N2QQAoUXrTp66hVFApGn+DyvmcfA";
+                
+                const audio = new Audio(beepData);
+                audio.volume = 0.3;
+                return audio;
+            } catch (e) {
+                console.log('Fallback audio creation failed:', e);
+                return null;
+            }
+        }
+
+        let fallbackBeepSound = null;
+
+        const availableEmojis = ['🏰',     '🗡️',     '🐴',    '🛡',    '🏹',    '🐲' ,    '🪶',   '🕯️', '👑', '🧙‍♂️',  '🎭', '🌲'];
+        const defaultNames = ['Castle', 'Sword', 'Horse', 'Shield', 'Bow', 'Dragon', 'Quill', 'Candle', 'Crown', 'Wizard', 'Mask', 'Tree'];
+
+        // Keep screen awake
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    gameState.wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    console.log('Wake lock failed:', err);
+                }
+            }
+        }
+
+        function updateTeamSetup() {
+            const numTeams = parseInt(document.getElementById('numTeams').value);
+            const container = document.getElementById('teamConfigs');
+            
+            // Initialize teams array if needed
+            while (gameState.teams.length < numTeams) {
+                const index = gameState.teams.length;
+                gameState.teams.push({
+                    emoji: availableEmojis[index],
+                    name: defaultNames[index] || `Team ${index + 1}`
+                });
+            }
+            
+            // Remove excess teams
+            gameState.teams = gameState.teams.slice(0, numTeams);
+            
+            container.innerHTML = '';
+            
+            for (let i = 0; i < numTeams; i++) {
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'team-config';
+                teamDiv.innerHTML = `
+                    <div class="team-number">#${i + 1}</div>
+                    <select class="emoji-select" onchange="updateTeamEmoji(${i}, this.value)">
+                        ${availableEmojis.map(emoji => 
+                            `<option value="${emoji}" ${emoji === gameState.teams[i].emoji ? 'selected' : ''}>${emoji}</option>`
+                        ).join('')}
+                    </select>
+                    <input type="text" class="team-name-input" value="${gameState.teams[i].name}" 
+                           onchange="updateTeamName(${i}, this.value)" placeholder="Team name...">
+                `;
+                container.appendChild(teamDiv);
+            }
+            
+            updateTurnOrderPreview();
+        }
+
+        function updateTeamEmoji(index, emoji) {
+            gameState.teams[index].emoji = emoji;
+            updateTurnOrderPreview();
+        }
+
+        function updateTeamName(index, name) {
+            gameState.teams[index].name = name;
+            updateTurnOrderPreview();
+        }
+
+        function updateTurnOrderPreview() {
+            const preview = document.getElementById('turnOrderPreview');
+            preview.innerHTML = gameState.teams.map(team => 
+                `<span title="${team.name}">${team.emoji}</span>`
+            ).join('→');
+        }
+
+        function updateTurnOrderTop() {
+            const container = document.getElementById('turnOrderTop');
+            container.innerHTML = gameState.teams.map((team, index) => 
+                `<span class="turn-indicator ${index === gameState.currentTeam ? 'active' : ''}" 
+                       title="${team.name}">${team.emoji}</span>`
+            ).join('');
+        }
+
+        function startGame() {
+            const timeLimit = parseInt(document.getElementById('timeLimit').value);
+            
+            gameState.timeLimit = timeLimit;
+            gameState.timeRemaining = timeLimit;
+            gameState.currentTeam = 0;
+            
+            updateDisplay();
+            updateTurnOrderTop();
+            
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            requestWakeLock();
+        }
+
+        function updateDisplay() {
+            const team = gameState.teams[gameState.currentTeam];
+            document.getElementById('currentTeamEmoji').textContent = team.emoji;
+            document.getElementById('currentTeamName').textContent = team.name;
+            
+            document.getElementById('timerDisplay').textContent = gameState.timeRemaining;
+            
+            const progressPercent = ((gameState.timeLimit - gameState.timeRemaining) / gameState.timeLimit) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            // Update progress overlay
+            const overlay = document.getElementById('progressOverlay');
+            if (overlay) {
+                overlay.style.width = '100%'; // width reset
+                if (progressPercent >= 100) {
+                    overlay.style.width = '0%';
+                } else {
+                    overlay.style.height = progressPercent + '%' ;
+                }
+            }
+            
+            const btn = document.getElementById('timerBtn');
+            if (gameState.isAlarmActive) {
+                btn.textContent = 'STOP';
+                btn.className = 'timer-btn stop';
+            } else if (gameState.isRunning) {
+                btn.textContent = 'running...';
+                btn.className = 'timer-btn';
+            } else {
+                btn.textContent = 'START';
+                btn.className = 'timer-btn';
+            }
+            
+            updateTurnOrderTop();
+        }
+
+        function toggleTimer() {
+            if (gameState.isAlarmActive) {
+                stopAlarm();
+                nextTeam();
+            } else if (gameState.isRunning) {
+                return;
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            gameState.isRunning = true;
+            gameState.timeRemaining = gameState.timeLimit;
+            updateDisplay();
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateDisplay();
+                
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    gameState.isRunning = false;
+                    triggerAlarm();
+                }
+            }, 1000);
+        }
+
+        function triggerAlarm() {
+            gameState.isAlarmActive = true;
+            document.body.classList.add('alarm');
+            updateDisplay();
+            
+            // Play beep sound with multiple fallback methods
+            gameState.alarmInterval = setInterval(() => {
+                // Try Web Audio API first
+                if (gameState.audioInitialized && gameState.audioContext) {
+                    playBeep();
+                }
+                // Fallback to HTML5 Audio
+                else if (fallbackBeepSound) {
+                    fallbackBeepSound.currentTime = 0;
+                    fallbackBeepSound.play().catch(e => console.log('Fallback beep failed:', e));
+                }
+                // Last resort: try to create and play a simple beep
+                else {
+                    try {
+                        const tempAudio = createFallbackBeep();
+                        if (tempAudio) {
+                            tempAudio.play().catch(e => console.log('Temp beep failed:', e));
+                        }
+                    } catch (e) {
+                        console.log('All audio methods failed:', e);
+                    }
+                }
+            }, 500); // Slightly slower for less aggressive beeping
+        }
+
+
+        function stopAlarm() {
+            gameState.isAlarmActive = false;
+            document.body.classList.remove('alarm');
+            if (gameState.alarmInterval) {
+                clearInterval(gameState.alarmInterval);
+                gameState.alarmInterval = null;
+            }
+            updateDisplay();
+        }
+
+        function nextTeam() {
+            gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length;
+            gameState.timeRemaining = gameState.timeLimit;
+            updateDisplay();
+        }
+
+        function backToSetup() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            if (gameState.alarmInterval) clearInterval(gameState.alarmInterval);
+            
+            gameState.isRunning = false;
+            gameState.isAlarmActive = false;
+            document.body.classList.remove('alarm');
+            
+            document.getElementById('setup').style.display = 'block';
+            document.getElementById('gameScreen').style.display = 'none';
+            
+            // Release wake lock
+            if (gameState.wakeLock) {
+                gameState.wakeLock.release();
+                gameState.wakeLock = null;
+            }
+        }
+
+        // Initialize team setup on page load
+        window.onload = function() {
+            updateTeamSetup();
+        };
+
+        // Prevent accidental zooming on mobile
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+
+        // Handle visibility change to re-request wake lock
+        document.addEventListener('visibilitychange', () => {
+            if (gameState.wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+
+         // Call initializeAudio() on first user interaction
+        document.addEventListener('click', function initAudioOnce() {
+            if (!gameState.audioInitialized) {
+                initializeAudio();
+            }
+            document.removeEventListener('click', initAudioOnce);
+        });
+    </script>
+
+<style>.mav-badge{position:fixed;bottom:14px;left:14px;z-index:9999;opacity:.28;transition:opacity .2s;line-height:0;}.mav-badge:hover{opacity:1;}</style>
+<a href="../index.html" class="mav-badge" aria-label="gav.fi tools">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges">
+    <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+    <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+    <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+    <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+    <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+    <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+    <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+    <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
+  </svg>
+</a>
+</body>
+</html>

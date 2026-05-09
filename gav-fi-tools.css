@@ -1,0 +1,229 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   gav-fi-tools.css — Index stylesheet for gav.fi tools hub
+   Self-contained. Used only by index.html.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg:           #07091a;
+  --surface:      #111523;
+  --surface-2:    #1a1e35;
+  --indigo:       #222034;
+  --gold:         #ffce10;
+  --gold-bright:  #fbf236;
+  --gold-tint:    rgba(255,206,16,.1);
+  --gold-border:  rgba(255,206,16,.2);
+  --text:         #ffffff;
+  --muted:        #cbdbfc;
+  --dim:          #6b7280;
+  --border:       rgba(255,206,16,.13);
+  --font:         'Montserrat', sans-serif;
+  --r:            12px;
+  --gap:          20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.site-header {
+  background: var(--indigo);
+  border-bottom: 2px solid var(--gold);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-header-mav {
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.site-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: .02em;
+  line-height: 1.1;
+}
+
+.site-subtitle {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+
+/* ── Main layout ─────────────────────────────────────────────────────────────── */
+
+main {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 44px 24px 72px;
+}
+
+section + section {
+  margin-top: 52px;
+}
+
+
+/* ── Section label ───────────────────────────────────────────────────────────── */
+
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: var(--gold);
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--gold-border);
+}
+
+
+/* ── Tool grid ───────────────────────────────────────────────────────────────── */
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--gap);
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  display: block;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.tool-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,206,16,.55);
+  box-shadow: 0 10px 32px rgba(255,206,16,.1);
+}
+
+.tool-preview {
+  height: 122px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tool-info {
+  padding: 14px 16px 16px;
+}
+
+.tool-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 5px;
+  line-height: 1.2;
+}
+
+.tool-desc {
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+
+/* ── Repo / external links grid ─────────────────────────────────────────────── */
+
+.repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--gap);
+}
+
+.repo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color .15s ease, transform .15s ease;
+}
+
+.repo-card:hover {
+  border-color: rgba(255,206,16,.45);
+  transform: translateY(-3px);
+}
+
+.repo-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.repo-name {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+.repo-desc {
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.45;
+  flex: 1;
+}
+
+.repo-slug {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--dim);
+  letter-spacing: .04em;
+  margin-top: auto;
+}
+
+.repo-card:hover .repo-slug { color: var(--gold); }
+
+.gh-icon {
+  width: 16px;
+  height: 16px;
+  fill: var(--dim);
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: fill .15s;
+}
+
+.repo-card:hover .gh-icon { fill: var(--gold); }
+
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .tool-grid  { grid-template-columns: 1fr 1fr; }
+  .repo-grid  { grid-template-columns: 1fr 1fr; }
+  main        { padding: 28px 16px 56px; }
+}
+
+@media (max-width: 380px) {
+  .tool-grid  { grid-template-columns: 1fr; }
+  .repo-grid  { grid-template-columns: 1fr; }
+}

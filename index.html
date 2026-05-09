@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gav.fi — tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="gav-fi-tools.css">
+  <style>
+    /* ── Tool preview panes ─────────────────────────────────────────────────── */
+
+    /* credits — film title card */
+    .prev-credits {
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .prev-credits::before {
+      content: "DIRECTED BY";
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.45rem;
+      font-weight: 800;
+      letter-spacing: .25em;
+      color: rgba(255,255,255,.35);
+    }
+    .prev-credits::after {
+      content: "GAVIN HANIGAN";
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: .14em;
+      color: rgba(255,255,255,.9);
+    }
+
+    /* DVD bounce */
+    .prev-dvd {
+      background: #000;
+      position: relative;
+    }
+    .prev-dvd::after {
+      content: "DVD";
+      position: absolute;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      padding: 5px 9px;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #c77dff);
+      color: #000;
+      border-radius: 3px;
+      animation: dvd 4s ease-in-out infinite alternate;
+    }
+    @keyframes dvd {
+      0%   { left: 8%;  top: 14%; }
+      30%  { left: 62%; top: 8%;  }
+      55%  { left: 44%; top: 58%; }
+      80%  { left: 70%; top: 38%; }
+      100% { left: 12%; top: 66%; }
+    }
+
+    /* Mav Generator — warm parchment + mav */
+    .prev-mav {
+      background: #f3efed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .prev-mav svg {
+      width: 96px;
+      height: 64px;
+      image-rendering: pixelated;
+    }
+
+    /* QR — pixel grid pattern */
+    .prev-qr {
+      background: #1a1a2e;
+      background-image:
+        repeating-linear-gradient(0deg,   transparent, transparent 7px, rgba(255,206,16,.08) 7px, rgba(255,206,16,.08) 8px),
+        repeating-linear-gradient(90deg,  transparent, transparent 7px, rgba(255,206,16,.08) 7px, rgba(255,206,16,.08) 8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .prev-qr-inner {
+      display: grid;
+      grid-template-columns: repeat(7,10px);
+      grid-template-rows: repeat(7,10px);
+      gap: 2px;
+    }
+    .prev-qr-inner span {
+      display: block;
+      background: #ffce10;
+      border-radius: 1px;
+    }
+    .prev-qr-inner span.e { background: transparent; }
+
+    /* Social Media — dark + lime accent card */
+    .prev-social {
+      background: #0c0c0e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+    .prev-social-card {
+      background: #141416;
+      border: 1px solid #2a2a30;
+      border-radius: 8px;
+      padding: 10px 12px;
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .prev-social-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e8ff47;
+      flex-shrink: 0;
+    }
+    .prev-social-lines {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding-top: 3px;
+    }
+    .prev-social-lines span {
+      display: block;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,.12);
+    }
+    .prev-social-lines span:first-child { width: 55%; background: rgba(232,255,71,.3); }
+
+    /* Team Timer — large countdown */
+    .prev-timer {
+      background: #1a1a28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .prev-timer::before {
+      content: "⚔️";
+      font-size: 1rem;
+    }
+    .prev-timer::after {
+      content: "01:00";
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #ffce10;
+      letter-spacing: .06em;
+    }
+
+    /* Zoetrope — spinning ring */
+    .prev-zoetrope {
+      background: #222034;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .z-ring {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      animation: z-spin 3s linear infinite;
+    }
+    .z-ring span {
+      position: absolute;
+      width: 8px;
+      height: 20px;
+      background: #ffce10;
+      border-radius: 2px;
+      left: 50%;
+      top: 50%;
+      transform-origin: 0 0;
+    }
+    @keyframes z-spin { to { transform: rotate(360deg); } }
+
+    /* Group Generator — warm bg + circle clusters */
+    .prev-groups {
+      background: #f3efed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .prev-group-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      width: 36px;
+    }
+    .prev-group-cluster span {
+      display: block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="." class="site-header-mav">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges">
+      <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+      <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+      <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+      <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+      <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+      <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+      <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+      <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
+    </svg>
+  </a>
+  <div>
+    <div class="site-title">gav.fi</div>
+    <div class="site-subtitle">tools &amp; experiments</div>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <p class="section-label">Tools</p>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="tools/credits.html">
+        <div class="tool-preview prev-credits"></div>
+        <div class="tool-info">
+          <div class="tool-name">Film Credits Builder</div>
+          <div class="tool-desc">Export a film-style credits roll as a PNG.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/dvd-bounce.html">
+        <div class="tool-preview prev-dvd"></div>
+        <div class="tool-info">
+          <div class="tool-name">DVD Bounce</div>
+          <div class="tool-desc">Screensaver with a configurable bouncing logo and panel.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/mav-generator.html">
+        <div class="tool-preview prev-mav">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" shape-rendering="crispEdges">
+            <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+            <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+            <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+            <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+            <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+            <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+            <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+            <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
+          </svg>
+        </div>
+        <div class="tool-info">
+          <div class="tool-name">MS Asset Generator</div>
+          <div class="tool-desc">Generate Medieval Solutions card art and SVG assets.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/qr-pixel-generator.html">
+        <div class="tool-preview prev-qr">
+          <div class="prev-qr-inner" id="qrGrid"></div>
+        </div>
+        <div class="tool-info">
+          <div class="tool-name">QR Pixel Generator</div>
+          <div class="tool-desc">Pixel-art style QR code generator with logo support.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/social-media.html">
+        <div class="tool-preview prev-social">
+          <div class="prev-social-card">
+            <div class="prev-social-avatar"></div>
+            <div class="prev-social-lines">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <div class="tool-info">
+          <div class="tool-name">Comment Card AV</div>
+          <div class="tool-desc">Generate social media comment cards for video.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/team-timer.html">
+        <div class="tool-preview prev-timer"></div>
+        <div class="tool-info">
+          <div class="tool-name">Team Timer</div>
+          <div class="tool-desc">Turn-based countdown timer for group activities.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/zoetrope.html">
+        <div class="tool-preview prev-zoetrope">
+          <div class="z-ring" id="zRing"></div>
+        </div>
+        <div class="tool-info">
+          <div class="tool-name">Zoetrope Generator</div>
+          <div class="tool-desc">Build and export zoetrope animation strips.</div>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/group-generator.html">
+        <div class="tool-preview prev-groups">
+          <div class="prev-group-cluster">
+            <span style="background:#c040d0"></span>
+            <span style="background:#7c4fd4"></span>
+            <span style="background:#c040d0"></span>
+            <span style="background:#7c4fd4"></span>
+          </div>
+          <div class="prev-group-cluster">
+            <span style="background:#efa551"></span>
+            <span style="background:#ffd966"></span>
+            <span style="background:#efa551"></span>
+            <span style="background:#ffd966"></span>
+          </div>
+          <div class="prev-group-cluster">
+            <span style="background:#34d399"></span>
+            <span style="background:#2ecc71"></span>
+            <span style="background:#34d399"></span>
+            <span style="background:#2ecc71"></span>
+          </div>
+        </div>
+        <div class="tool-info">
+          <div class="tool-name">Group Generator</div>
+          <div class="tool-desc">Randomise and balance groups from a participant list.</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">Projects</p>
+    <div class="repo-grid">
+
+      <a class="repo-card" href="https://github.com/gavinhaggis/physioo" target="_blank" rel="noopener noreferrer">
+        <div class="repo-header">
+          <div class="repo-name">physioo</div>
+          <svg class="gh-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </div>
+        <div class="repo-desc">Physiotherapy exercise tracker and session logger.</div>
+        <div class="repo-slug">github.com/gavinhaggis/physioo</div>
+      </a>
+
+      <a class="repo-card" href="https://github.com/gavinhaggis/webingo" target="_blank" rel="noopener noreferrer">
+        <div class="repo-header">
+          <div class="repo-name">webingo</div>
+          <svg class="gh-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </div>
+        <div class="repo-desc">Multiplayer web bingo — host and player views, live sync.</div>
+        <div class="repo-slug">github.com/gavinhaggis/webingo</div>
+      </a>
+
+      <a class="repo-card" href="https://github.com/gavinhaggis/guinness-price-tracker" target="_blank" rel="noopener noreferrer">
+        <div class="repo-header">
+          <div class="repo-name">guinness price tracker</div>
+          <svg class="gh-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </div>
+        <div class="repo-desc">Track and map Guinness pint prices across Helsinki.</div>
+        <div class="repo-slug">github.com/gavinhaggis/guinness-price-tracker</div>
+      </a>
+
+      <a class="repo-card" href="https://github.com/gavinhaggis/food.me" target="_blank" rel="noopener noreferrer">
+        <div class="repo-header">
+          <div class="repo-name">food.me</div>
+          <svg class="gh-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </div>
+        <div class="repo-desc">Restaurant menu scanner and allergen checker.</div>
+        <div class="repo-slug">github.com/gavinhaggis/food.me</div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // QR preview — pseudo-random pixel pattern evocative of a QR code
+  const qrPattern = [
+    1,1,1,0,1,0,1,
+    1,0,1,0,0,1,1,
+    1,1,1,0,1,0,0,
+    0,1,0,1,0,1,0,
+    1,1,1,0,1,1,1,
+    0,1,0,0,0,1,0,
+    1,0,1,0,1,1,1,
+  ];
+  const qrGrid = document.getElementById('qrGrid');
+  qrPattern.forEach(on => {
+    const s = document.createElement('span');
+    if (!on) s.className = 'e';
+    qrGrid.appendChild(s);
+  });
+
+  // Zoetrope ring — 10 evenly spaced bars
+  const ring = document.getElementById('zRing');
+  const count = 10;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('span');
+    const angle = (360 / count) * i;
+    const rad = angle * Math.PI / 180;
+    const r = 28;
+    const cx = 40, cy = 40;
+    const x = cx + r * Math.sin(rad) - 4;
+    const y = cy - r * Math.cos(rad) - 10;
+    s.style.cssText = `left:${x}px;top:${y}px;transform:rotate(${angle}deg);opacity:${0.4 + (i / count) * 0.6}`;
+    ring.appendChild(s);
+  }
+</script>
+
+</body>
+</html>

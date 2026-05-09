@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DVD Bounce</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; overflow: hidden; background: #000; width: 100vw; height: 100vh; font-family: system-ui, sans-serif; }
+
+  #flashLayer { position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: 0; transition: opacity 0.05s ease; }
+
+  #panel {
+    position: fixed; top: 18px; left: 18px;
+    background: rgba(20,20,30,0.82); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+    padding: 14px 16px 16px; color: #eee; font-size: 13px; line-height: 1.5;
+    width: 248px; z-index: 100;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+    max-height: calc(100vh - 36px); overflow-y: auto;
+  }
+  #panel.hidden { opacity: 0; visibility: hidden; }
+  #panel h2 { margin: 0 0 10px; font-size: 14px; letter-spacing: .05em; color: #fff; display: flex; align-items: center; gap: 7px; }
+
+  .tabs { display: flex; gap: 3px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 3px; margin-bottom: 12px; }
+  .tab { flex: 1; text-align: center; padding: 4px 0; border-radius: 6px; font-size: 11px; cursor: pointer; color: #aaa; transition: background .2s, color .2s; }
+  .tab.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .row { margin-bottom: 10px; }
+  .row:last-child { margin-bottom: 0; }
+  label.field { display: flex; flex-direction: column; gap: 3px; }
+  label.field span { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; }
+  label.field span b { color: #eee; font-weight: 600; }
+
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.18); outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #fff; border: 2px solid #555; cursor: pointer; }
+
+  .upload-btn { display: inline-block; cursor: pointer; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 7px; padding: 5px 12px; font-size: 12px; color: #eee; transition: background .2s; width: 100%; text-align: center; }
+  .upload-btn:hover { background: rgba(255,255,255,0.2); }
+  #fileInput { display: none; }
+
+  input[type=text] { width: 100%; padding: 6px 9px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 7px; color: #fff; font-size: 18px; font-weight: 700; font-family: system-ui, sans-serif; outline: none; }
+  input[type=text]:focus { border-color: rgba(255,255,255,0.4); }
+
+  select { width: 100%; padding: 5px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 7px; color: #fff; font-size: 12px; outline: none; cursor: pointer; appearance: none; }
+  select option { background: #1a1a2e; }
+
+  .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 12px 0; }
+
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .btn-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .icon-btn { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13); border-radius: 7px; color: #bbb; font-size: 11px; cursor: pointer; transition: background .2s, color .2s; white-space: nowrap; }
+  .icon-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+  .icon-btn.active { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.3); }
+
+  #colorLockRow { display: flex; gap: 6px; align-items: center; }
+  #colorLockRow input[type=color] { width: 32px; height: 28px; padding: 1px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: none; cursor: pointer; flex-shrink: 0; }
+
+  #stats { display: flex; justify-content: space-between; margin-top: 10px; padding: 6px 10px; background: rgba(255,255,255,0.05); border-radius: 7px; font-size: 11px; color: #888; }
+  #stats span b { color: #eee; font-weight: 600; }
+
+  .kbd { display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 0 5px; font-size: 10px; color: #aaa; margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<div id="flashLayer"></div>
+<canvas id="trailCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:1;"></canvas>
+<div id="logosContainer" style="position:fixed;inset:0;pointer-events:none;z-index:2;"></div>
+
+<div id="panel">
+  <h2>
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#aaa" stroke-width="1.5"/><circle cx="9" cy="9" r="3" fill="#aaa"/></svg>
+    DVD Bounce
+  </h2>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="image">🖼 Image</div>
+    <div class="tab" data-tab="text">✏️ Text</div>
+    <div class="tab" data-tab="emoji">😀 Emoji</div>
+    <div class="tab" data-tab="clock">🕐 Clock</div>
+  </div>
+
+  <div class="tab-panel active" id="tab-image">
+    <div class="row"><label class="upload-btn" for="fileInput">⬆ Upload Image</label><input type="file" id="fileInput" accept="image/png,image/jpeg,image/svg+xml,image/gif"></div>
+  </div>
+  <div class="tab-panel" id="tab-text">
+    <div class="row"><label class="field"><span>Text</span><input type="text" id="textInput" value="DVD" maxlength="40" spellcheck="false"></label></div>
+    <div class="row"><label class="field"><span>Font</span>
+      <select id="fontSelect">
+        <option value="system-ui,sans-serif">System UI</option>
+        <option value="Georgia,serif">Georgia</option>
+        <option value="'Courier New',monospace">Courier New</option>
+        <option value="Impact,sans-serif">Impact</option>
+        <option value="'Arial Black',sans-serif">Arial Black</option>
+        <option value="'Comic Sans MS',cursive">Comic Sans</option>
+      </select>
+    </label></div>
+  </div>
+  <div class="tab-panel" id="tab-emoji">
+    <div class="row"><label class="field"><span>Emoji</span><input type="text" id="emojiInput" value="📀" maxlength="4" spellcheck="false" style="font-size:28px;text-align:center;"></label></div>
+  </div>
+  <div class="tab-panel" id="tab-clock">
+    <div class="row" style="font-size:11px;color:#aaa;padding:4px 0;">Bounces the current time, updated every second.</div>
+    <div class="row"><label class="field"><span>Font</span>
+      <select id="clockFontSelect">
+        <option value="'Courier New',monospace">Courier New</option>
+        <option value="system-ui,sans-serif">System UI</option>
+        <option value="Impact,sans-serif">Impact</option>
+        <option value="Georgia,serif">Georgia</option>
+      </select>
+    </label></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="row"><label class="field"><span>Size <b id="sizeVal">200px</b></span><input type="range" id="sizeSlider" min="50" max="400" value="200"></label></div>
+  <div class="row"><label class="field"><span>Speed <b id="speedVal">150 px/s</b></span><input type="range" id="speedSlider" min="50" max="500" value="150"></label></div>
+  <div class="row"><label class="field"><span>Glow <b id="glowVal">Off</b></span><input type="range" id="glowSlider" min="0" max="60" value="0"></label></div>
+  <div class="row">
+    <div class="icon-btn" id="trailToggle" style="width:100%;">👻 Ghost: Off<span class="kbd">G</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="row">
+    <div style="font-size:11px;color:#aaa;margin-bottom:5px;">Color</div>
+    <div id="colorLockRow">
+      <div class="icon-btn" id="colorLockBtn" style="flex:1;">🎲 Random</div>
+      <input type="color" id="colorPicker" value="#ff2200" title="Pick locked color">
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="btn-grid three" style="margin-bottom:6px;">
+    <div class="icon-btn" id="pauseBtn">⏸ Pause<span class="kbd">Spc</span></div>
+    <div class="icon-btn" id="addBtn">➕ Add<span class="kbd">+</span></div>
+    <div class="icon-btn" id="removeBtn">➖ Remove<span class="kbd">-</span></div>
+  </div>
+  <div class="row">
+    <div class="icon-btn" id="collideToggle" style="width:100%;">💥 Collisions: Off<span class="kbd">C</span></div>
+  </div>
+  <div class="btn-grid" style="margin-bottom:6px;">
+    <div class="icon-btn" id="fsBtn">⛶ Fullscreen<span class="kbd">F</span></div>
+    <div class="icon-btn" id="hideBtn">👁 Hide UI<span class="kbd">H</span></div>
+  </div>
+  <div class="btn-grid">
+    <div class="icon-btn" id="saveBtn">💾 Save HTML</div>
+    <div class="icon-btn" id="resetBtn">↺ Reset</div>
+  </div>
+
+  <div id="stats">
+    <span>Bounces: <b id="statBounces">0</b></span>
+    <span>Corners: <b id="statCorners">0</b></span>
+    <span>Objects: <b id="statObjects">1</b></span>
+  </div>
+</div>
+
+<script>
+// ── Globals ───────────────────────────────────────────────────────────────────
+const flashLayer  = document.getElementById('flashLayer');
+const trailCanvas = document.getElementById('trailCanvas');
+const tCtx        = trailCanvas.getContext('2d');
+const container   = document.getElementById('logosContainer');
+const panel       = document.getElementById('panel');
+const sizeSlider  = document.getElementById('sizeSlider');
+const speedSlider = document.getElementById('speedSlider');
+const glowSlider  = document.getElementById('glowSlider');
+const sizeVal     = document.getElementById('sizeVal');
+const speedVal    = document.getElementById('speedVal');
+const glowVal     = document.getElementById('glowVal');
+const textInput   = document.getElementById('textInput');
+const fontSelect  = document.getElementById('fontSelect');
+const emojiInput  = document.getElementById('emojiInput');
+const clockFont   = document.getElementById('clockFontSelect');
+const colorLockBtn= document.getElementById('colorLockBtn');
+const colorPicker = document.getElementById('colorPicker');
+const pauseBtn    = document.getElementById('pauseBtn');
+const statBounces = document.getElementById('statBounces');
+const statCorners = document.getElementById('statCorners');
+const statObjects = document.getElementById('statObjects');
+
+let W = window.innerWidth, H = window.innerHeight;
+let paused       = false;
+let uiVisible    = true;
+let colorLocked  = false;
+let glowAmount   = 0;
+let trailEnabled   = false;
+let collisions     = false;
+let totalBounces = 0;
+let totalCorners = 0;
+let mode         = 'image';
+let sourceImg    = null;
+let naturalRatio = 260 / 100;
+let currentSize  = 200;
+let currentSpeed = 150;
+let lastTime     = null;
+
+trailCanvas.width  = W;
+trailCanvas.height = H;
+
+const DEFAULT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 100" width="260" height="100">
+  <path d="M10 15 L10 85 L45 85 Q85 85 85 50 Q85 15 45 15 Z M30 33 L44 33 Q65 33 65 50 Q65 67 44 67 L30 67 Z" fill="white"/>
+  <polygon points="90,15 115,85 140,85 165,15 145,15 127.5,68 110,15" fill="white"/>
+  <path d="M170 15 L170 85 L205 85 Q245 85 245 50 Q245 15 205 15 Z M190 33 L204 33 Q225 33 225 50 Q225 67 204 67 L190 67 Z" fill="white"/>
+</svg>`;
+
+// ── Color helpers ─────────────────────────────────────────────────────────────
+const HUES = [0,30,60,90,120,160,200,240,270,300,330];
+let lastHue = -1;
+function randomHue() {
+  const pool = HUES.filter(h => Math.abs(h - lastHue) > 40);
+  lastHue = pool[Math.floor(Math.random() * pool.length)];
+  return lastHue;
+}
+function hueToRGB(h) {
+  const f = n => { const k=(n+h/30)%12; return Math.round((0.5-Math.max(Math.min(k-3,9-k,1),-1)*0.5)*255); };
+  return { r:f(0), g:f(8), b:f(4) };
+}
+function hexToRGB(hex) {
+  return { r:parseInt(hex.slice(1,3),16), g:parseInt(hex.slice(3,5),16), b:parseInt(hex.slice(5,7),16) };
+}
+function getColor() {
+  return colorLocked ? hexToRGB(colorPicker.value) : hueToRGB(randomHue());
+}
+
+// ── Emoji tinting via offscreen canvas ───────────────────────────────────────
+function drawTintedEmoji(ctx, emoji, w, h, r, g, b) {
+  // Pass 1: draw emoji normally
+  const a = document.createElement('canvas');
+  a.width = w; a.height = h;
+  const ac = a.getContext('2d');
+  const fs = Math.round(h * 0.82);
+  ac.font = `${fs}px serif`;
+  ac.textBaseline = 'middle';
+  ac.textAlign = 'center';
+  ac.fillText(emoji, w/2, h/2);
+
+  // Pass 2: color layer multiplied, masked to emoji shape
+  const b2 = document.createElement('canvas');
+  b2.width = w; b2.height = h;
+  const bc = b2.getContext('2d');
+  // draw color
+  bc.fillStyle = `rgb(${r},${g},${b})`;
+  bc.fillRect(0, 0, w, h);
+  // mask to emoji alpha
+  bc.globalCompositeOperation = 'destination-in';
+  bc.drawImage(a, 0, 0);
+
+  // Pass 3: composite onto destination — emoji first, then color on top with multiply
+  ctx.drawImage(a, 0, 0);
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.drawImage(b2, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ── Logo class ────────────────────────────────────────────────────────────────
+class Logo {
+  constructor() {
+    this.el  = document.createElement('div');
+    this.el.style.cssText = 'position:absolute;pointer-events:none;';
+    this.cvs = document.createElement('canvas');
+    this.ctx = this.cvs.getContext('2d');
+    this.el.appendChild(this.cvs);
+    container.appendChild(this.el);
+
+    this.w = currentSize;
+    this.h = Math.round(currentSize / naturalRatio);
+    this.x = Math.random() * Math.max(1, W - this.w);
+    this.y = Math.random() * Math.max(1, H - this.h);
+    const angle = (Math.random()*60+15)*Math.PI/180;
+    this.vx = currentSpeed * Math.cos(angle) * (Math.random()<.5?1:-1);
+    this.vy = currentSpeed * Math.sin(angle) * (Math.random()<.5?1:-1);
+    this.color = getColor();
+    this._label = '';
+    this.resize(currentSize);
+    this.render();
+  }
+
+  resize(w) {
+    this.w = w;
+    this.h = Math.round(w / naturalRatio);
+    this.cvs.width  = this.w;
+    this.cvs.height = this.h;
+    this.render();
+  }
+
+  render() {
+    const c = this.ctx;
+    const {r,g,b} = this.color;
+    c.clearRect(0, 0, this.cvs.width, this.cvs.height);
+
+    if (mode === 'emoji') {
+      drawTintedEmoji(c, emojiInput.value||'📀', this.cvs.width, this.cvs.height, r, g, b);
+
+    } else if (mode === 'text' || mode === 'clock') {
+      const fs   = Math.round(this.cvs.height * 0.78);
+      const font = mode === 'clock' ? clockFont.value : fontSelect.value;
+      c.font = `900 ${fs}px ${font}`;
+      c.textBaseline = 'middle';
+      c.textAlign = 'center';
+      c.fillStyle = `rgb(${r},${g},${b})`;
+      c.fillText(this._label || '', this.cvs.width/2, this.cvs.height/2);
+
+    } else {
+      if (!sourceImg) return;
+      c.globalCompositeOperation = 'source-over';
+      c.drawImage(sourceImg, 0, 0, this.cvs.width, this.cvs.height);
+      c.globalCompositeOperation = 'multiply';
+      c.fillStyle = `rgb(${r},${g},${b})`;
+      c.fillRect(0, 0, this.cvs.width, this.cvs.height);
+      c.globalCompositeOperation = 'destination-in';
+      c.drawImage(sourceImg, 0, 0, this.cvs.width, this.cvs.height);
+      c.globalCompositeOperation = 'source-over';
+    }
+
+    this.el.style.filter = glowAmount > 0
+      ? `drop-shadow(0 0 ${glowAmount}px rgb(${r},${g},${b}))`
+      : '';
+  }
+
+  updateClockLabel() {
+    const label = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if (label !== this._label) { this._label = label; this.render(); }
+  }
+
+  update(dt) {
+    if (mode === 'clock') this.updateClockLabel();
+
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+    let bx = false, by = false;
+    if (this.x <= 0)            { this.x = 0;         this.vx =  Math.abs(this.vx); bx = true; }
+    else if (this.x+this.w >= W){ this.x = W-this.w;  this.vx = -Math.abs(this.vx); bx = true; }
+    if (this.y <= 0)            { this.y = 0;          this.vy =  Math.abs(this.vy); by = true; }
+    else if (this.y+this.h >= H){ this.y = H-this.h;  this.vy = -Math.abs(this.vy); by = true; }
+
+    if (bx || by) {
+      this.color = getColor();
+      nudgeAngle(this);
+      this.render();
+      if (trailEnabled) spawnTrail(this);
+      totalBounces++;
+      if (bx && by) { cornerFlash(this.color); totalCorners++; }
+      updateStats();
+    }
+
+    this.el.style.left = this.x + 'px';
+    this.el.style.top  = this.y + 'px';
+  }
+
+  destroy() { this.el.remove(); }
+}
+
+function nudgeAngle(logo) {
+  const nudge = (Math.random()*16-8)*Math.PI/180;
+  const spd = Math.hypot(logo.vx, logo.vy);
+  const a = Math.atan2(logo.vy, logo.vx) + nudge;
+  logo.vx = spd*Math.cos(a);
+  logo.vy = spd*Math.sin(a);
+}
+
+// ── Trails ────────────────────────────────────────────────────────────────────
+const trails = [];
+function spawnTrail(logo) {
+  // Snapshot current canvas pixels into an ImageBitmap for drawing later
+  const snap = document.createElement('canvas');
+  snap.width = logo.cvs.width; snap.height = logo.cvs.height;
+  snap.getContext('2d').drawImage(logo.cvs, 0, 0);
+  trails.push({ x:logo.x, y:logo.y, w:logo.w, h:logo.h, img:snap, alpha:0.5, born:performance.now() });
+}
+function drawTrails(now) {
+  tCtx.clearRect(0, 0, W, H);
+  for (let i = trails.length-1; i >= 0; i--) {
+    const t = trails[i];
+    t.alpha = Math.max(0, 0.5 - (now - t.born) / 1000 * 1.1);
+    if (t.alpha <= 0) { trails.splice(i, 1); continue; }
+    tCtx.globalAlpha = t.alpha;
+    tCtx.drawImage(t.img, t.x, t.y, t.w, t.h);
+  }
+  tCtx.globalAlpha = 1;
+}
+
+// ── Corner flash ──────────────────────────────────────────────────────────────
+function cornerFlash(col) {
+  const {r,g,b} = col;
+  flashLayer.style.background = `rgb(${r},${g},${b})`;
+  flashLayer.style.opacity = '0.35';
+  setTimeout(() => { flashLayer.style.opacity = '0'; }, 120);
+}
+
+// ── Logo management ───────────────────────────────────────────────────────────
+let logos = [];
+function addLogo() { logos.push(new Logo()); updateStats(); }
+function removeLogo() { if (logos.length > 1) { logos.pop().destroy(); updateStats(); } }
+function rebuildLogos() { logos.forEach(l => l.destroy()); logos = []; addLogo(); }
+function updateStats() {
+  statBounces.textContent = totalBounces;
+  statCorners.textContent = totalCorners;
+  statObjects.textContent = logos.length;
+}
+function rerenderAll() { logos.forEach(l => l.resize(currentSize)); }
+function rescaleSpeed() {
+  logos.forEach(l => {
+    const spd = Math.hypot(l.vx, l.vy);
+    if (spd > 0) { l.vx = l.vx/spd*currentSpeed; l.vy = l.vy/spd*currentSpeed; }
+  });
+}
+
+// ── Source helpers ────────────────────────────────────────────────────────────
+function measureTextRatio(text, font) {
+  const tmp = document.createElement('canvas');
+  const tc  = tmp.getContext('2d');
+  tc.font = `900 100px ${font}`;
+  const m = tc.measureText(text || ' ');
+  return (Math.ceil(m.width) + 8) / (100 * 1.2);
+}
+
+function setMode(m) {
+  mode = m;
+  if (m === 'text') {
+    naturalRatio = measureTextRatio(textInput.value || 'DVD', fontSelect.value);
+    logos.forEach(l => { l._label = textInput.value || 'DVD'; });
+  } else if (m === 'emoji') {
+    naturalRatio = 1;
+  } else if (m === 'clock') {
+    const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    naturalRatio = measureTextRatio(t, clockFont.value);
+    logos.forEach(l => { l._label = t; });
+  }
+  rerenderAll();
+}
+
+function loadImage(url, ratio) {
+  const img = new Image();
+  img.onload = () => {
+    sourceImg = img;
+    naturalRatio = ratio || (img.naturalWidth / img.naturalHeight) || 1;
+    rerenderAll();
+  };
+  img.src = url;
+}
+
+function loadDefault() {
+  const blob = new Blob([DEFAULT_SVG], {type:'image/svg+xml'});
+  loadImage(URL.createObjectURL(blob), 260/100);
+}
+
+function frame(ts) {
+  if (!lastTime) lastTime = ts;
+  const dt = paused ? 0 : Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  logos.forEach(l => l.update(dt));
+  if (collisions) resolveCollisions();
+  drawTrails(ts);
+  requestAnimationFrame(frame);
+}
+
+// ── Collision resolution ──────────────────────────────────────────────────────
+function resolveCollisions() {
+  for (let i = 0; i < logos.length; i++) {
+    for (let j = i + 1; j < logos.length; j++) {
+      const a = logos[i], b = logos[j];
+      // Use centre-point distance on the smaller axis for AABB-style elastic bounce
+      const acx = a.x + a.w/2, acy = a.y + a.h/2;
+      const bcx = b.x + b.w/2, bcy = b.y + b.h/2;
+      const overlapX = (a.w + b.w)/2 - Math.abs(acx - bcx);
+      const overlapY = (a.h + b.h)/2 - Math.abs(acy - bcy);
+      if (overlapX <= 0 || overlapY <= 0) continue;
+
+      // Swap velocity components on the axis with least overlap
+      if (overlapX < overlapY) {
+        // Horizontal collision — swap vx, push apart
+        [a.vx, b.vx] = [b.vx, a.vx];
+        const push = overlapX / 2 + 0.5;
+        if (acx < bcx) { a.x -= push; b.x += push; }
+        else           { a.x += push; b.x -= push; }
+      } else {
+        // Vertical collision — swap vy, push apart
+        [a.vy, b.vy] = [b.vy, a.vy];
+        const push = overlapY / 2 + 0.5;
+        if (acy < bcy) { a.y -= push; b.y += push; }
+        else           { a.y += push; b.y -= push; }
+      }
+
+      // New colour + trail on collision
+      a.color = getColor(); a.render();
+      b.color = getColor(); b.render();
+      if (trailEnabled) { spawnTrail(a); spawnTrail(b); }
+      totalBounces += 2;
+      updateStats();
+    }
+  }
+}
+
+// ── UI wiring ─────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    setMode(tab.dataset.tab);
+  });
+});
+
+textInput.addEventListener('input', () => {
+  if (mode !== 'text') return;
+  naturalRatio = measureTextRatio(textInput.value || 'DVD', fontSelect.value);
+  logos.forEach(l => { l._label = textInput.value || 'DVD'; l.resize(currentSize); });
+});
+fontSelect.addEventListener('change', () => {
+  if (mode !== 'text') return;
+  naturalRatio = measureTextRatio(textInput.value || 'DVD', fontSelect.value);
+  rerenderAll();
+});
+emojiInput.addEventListener('input', () => { if (mode === 'emoji') rerenderAll(); });
+clockFont.addEventListener('change', () => { if (mode === 'clock') rerenderAll(); });
+
+sizeSlider.addEventListener('input', () => {
+  currentSize = parseInt(sizeSlider.value);
+  sizeVal.textContent = currentSize + 'px';
+  logos.forEach(l => l.resize(currentSize));
+});
+speedSlider.addEventListener('input', () => {
+  currentSpeed = parseInt(speedSlider.value);
+  speedVal.textContent = currentSpeed + ' px/s';
+  rescaleSpeed();
+});
+glowSlider.addEventListener('input', () => {
+  glowAmount = parseInt(glowSlider.value);
+  glowVal.textContent = glowAmount === 0 ? 'Off' : glowAmount + 'px';
+  rerenderAll();
+});
+
+document.getElementById('trailToggle').addEventListener('click', function() {
+  trailEnabled = !trailEnabled;
+  this.textContent = `👻 Ghost: ${trailEnabled ? 'On' : 'Off'}`;
+  this.classList.toggle('active', trailEnabled);
+  if (!trailEnabled) { trails.length = 0; tCtx.clearRect(0, 0, W, H); }
+});
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  mode = 'image';
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab==='image'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-image'));
+  const url = URL.createObjectURL(f);
+  const tmp = new Image();
+  tmp.onload = () => loadImage(url, tmp.naturalWidth / tmp.naturalHeight);
+  tmp.src = url;
+});
+
+colorLockBtn.addEventListener('click', () => {
+  colorLocked = !colorLocked;
+  colorLockBtn.textContent = colorLocked ? '🔒 Locked' : '🎲 Random';
+  colorLockBtn.classList.toggle('active', colorLocked);
+});
+colorPicker.addEventListener('input', () => {
+  if (colorLocked) { logos.forEach(l => { l.color = hexToRGB(colorPicker.value); l.render(); }); }
+});
+
+document.getElementById('collideToggle').addEventListener('click', function() {
+  collisions = !collisions;
+  this.textContent = `💥 Collisions: ${collisions ? 'On' : 'Off'}`;
+  this.classList.toggle('active', collisions);
+});
+
+document.getElementById('addBtn').addEventListener('click', addLogo);
+document.getElementById('removeBtn').addEventListener('click', removeLogo);
+
+function togglePause() {
+  paused = !paused;
+  pauseBtn.innerHTML = (paused ? '▶ Play' : '⏸ Pause') + '<span class="kbd">Spc</span>';
+  pauseBtn.classList.toggle('active', paused);
+}
+pauseBtn.addEventListener('click', togglePause);
+
+const fsBtn = document.getElementById('fsBtn');
+function toggleFS() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen().catch(()=>{});
+}
+fsBtn.addEventListener('click', toggleFS);
+document.addEventListener('fullscreenchange', () => {
+  const fs = !!document.fullscreenElement;
+  fsBtn.innerHTML = (fs ? '⛶ Exit' : '⛶ Full') + '<span class="kbd">F</span>';
+  W = window.innerWidth; H = window.innerHeight;
+  trailCanvas.width = W; trailCanvas.height = H;
+});
+
+function hideUI() { uiVisible = false; panel.classList.add('hidden'); }
+document.getElementById('hideBtn').addEventListener('click', hideUI);
+document.addEventListener('click', e => {
+  if (!uiVisible && !panel.contains(e.target)) { uiVisible = true; panel.classList.remove('hidden'); }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  totalBounces = 0; totalCorners = 0;
+  trails.length = 0; tCtx.clearRect(0, 0, W, H);
+  rebuildLogos();
+});
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'}));
+  a.download = 'dvd-bounce.html'; a.click();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+  if (e.key === 'f' || e.key === 'F') toggleFS();
+  if (e.key === 'h' || e.key === 'H') {
+    uiVisible ? hideUI() : (() => { uiVisible = true; panel.classList.remove('hidden'); })();
+  }
+  if (e.key === '+' || e.key === '=') addLogo();
+  if (e.key === '-' || e.key === '_') removeLogo();
+  if (e.key === 'g' || e.key === 'G') document.getElementById('trailToggle').click();
+  if (e.key === 'c' || e.key === 'C') document.getElementById('collideToggle').click();
+});
+
+window.addEventListener('resize', () => {
+  W = window.innerWidth; H = window.innerHeight;
+  trailCanvas.width = W; trailCanvas.height = H;
+  logos.forEach(l => { l.x = Math.min(l.x, W-l.w); l.y = Math.min(l.y, H-l.h); });
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadDefault();
+addLogo();
+requestAnimationFrame(frame);
+</script>
+
+<style>.mav-badge{position:fixed;bottom:14px;left:14px;z-index:9999;opacity:.28;transition:opacity .2s;line-height:0;}.mav-badge:hover{opacity:1;}</style>
+<a href="../index.html" class="mav-badge" aria-label="gav.fi tools">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges">
+    <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+    <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+    <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+    <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+    <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+    <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+    <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+    <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
+  </svg>
+</a>
+</body>
+</html>

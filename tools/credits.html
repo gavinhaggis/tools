@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Film Credits PNG Builder</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0c0f14;
+      --panel: #121722;
+      --panel-2: #0f1420;
+      --text: #e7ecf5;
+      --muted: #9aa7bd;
+      --danger: #ff7b7b;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Montserrat", system-ui, sans-serif;
+      background: radial-gradient(1200px 800px at 10% -10%, #1b2440 0%, transparent 40%),
+                  radial-gradient(1200px 800px at 120% 0%, #132a2a 0%, transparent 40%),
+                  var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky; top: 0; backdrop-filter: blur(8px);
+      background: rgba(12,15,20,0.8);
+      z-index: 5;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    }
+    header h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: .02em; }
+    header .pill {
+      font-size: 12px; color: var(--muted);
+      padding: 4px 8px; border: 1px dashed rgba(255,255,255,0.2);
+      border-radius: 999px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 14px;
+      padding: 14px;
+      height: calc(100vh - 64px);
+    }
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; height: auto; }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 30%), var(--panel);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 12px;
+      overflow: auto;
+      min-height: 200px;
+    }
+    .panel h2 {
+      font-size: 13px;
+      margin: 0 0 8px 0;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin: 6px 0 4px;
+    }
+    input[type="number"], input[type="text"], select, textarea, input[type="color"] {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 8px 9px;
+      font: inherit;
+      outline: none;
+    }
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.35;
+      font-size: 13px;
+      white-space: pre;
+      tab-size: 4;
+    }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    .row { display:flex; gap:8px; align-items:center; }
+    .row > * { flex:1; }
+
+    button {
+      appearance: none; border: 0; border-radius: 12px; padding: 10px 12px;
+      font-family: inherit; font-weight: 700; cursor: pointer;
+      transition: .15s ease transform, .15s ease opacity, .15s ease background;
+      background: #1e2a3e; color: white;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); opacity:.9; }
+    button.primary { background: linear-gradient(180deg, #22b6ff, #0a77ff); color:#03101a; }
+    button.ghost { background: transparent; border:1px solid rgba(255,255,255,0.14); color:var(--text); }
+    button.warn { background: #3b1e1e; color: #ffd0d0; border:1px solid rgba(255,123,123,0.35); }
+    .btnbar { display:flex; gap:8px; flex-wrap:wrap; }
+
+    .preview-wrap {
+      position: relative;
+      height: 100%;
+      min-height: 300px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+    }
+    .preview-toolbar {
+      display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+      padding: 4px 2px;
+    }
+    .preview-toolbar .stats { font-size: 12px; color: var(--muted); }
+
+    .preview-scroller {
+      overflow: auto;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.06);
+      background:
+        repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 10px, rgba(255,255,255,0.02) 10px 20px);
+      padding: 12px;
+      position: relative;
+    }
+
+    #creditsCanvas {
+      position: relative;
+      margin: 0 auto;
+      background: transparent;
+      width: var(--canvas-w, 1080px);
+      height: var(--canvas-h, auto);
+      min-height: 200px;
+      outline: none;
+    }
+
+    .guides {
+      pointer-events: none;
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: 1fr minmax(0, var(--canvas-w, 1080px)) 1fr;
+    }
+    .guides > div:nth-child(2) {
+      border-left: 1px dashed rgba(255,255,255,0.25);
+      border-right: 1px dashed rgba(255,255,255,0.25);
+    }
+
+    .credits-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding-top: var(--pad-top, 120px);
+      padding-bottom: var(--pad-bot, 120px);
+      display: flex;
+      flex-direction: column;
+      align-items: var(--align-items, center);
+      text-align: var(--text-align, center);
+      color: var(--text-color, #fff);
+      background: transparent;
+    }
+    .credits-inner.align-left,
+    .credits-inner.align-right {
+      padding-left: var(--pad-x, 64px);
+      padding-right: var(--pad-x, 64px);
+    }
+
+    .section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: inherit;
+      /* section gap is applied inline per-section in JS */
+      margin-bottom: 0;
+    }
+
+    .title,.subtitle,.body{ width:100%; white-space:pre-wrap; word-break:break-word; margin:0; }
+
+    .title {
+      font-size: var(--title-size, 80px);
+      font-weight: 700;
+      line-height: var(--title-lh, 1.15);
+      letter-spacing: .02em;
+    }
+    .subtitle {
+      font-size: var(--subtitle-size, 48px);
+      font-weight: 600;
+      line-height: var(--subtitle-lh, 1.2);
+    }
+    .body {
+      font-size: var(--body-size, 32px);
+      font-weight: 400;
+      line-height: var(--body-lh, 1.25);
+    }
+
+    .gap-ts { height: var(--gap-ts, 14px); }
+    .gap-sb { height: var(--gap-sb, 10px); }
+
+    .empty-note {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 14px;
+    }
+    .small { font-size: 11px; color: var(--muted); }
+    .toggle {
+      display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted);
+      user-select: none;
+    }
+    .toggle input { width:auto; }
+    .danger { color: var(--danger); }
+    .ok { color: #a8ffb2; }
+    footer { padding: 10px 14px 18px; color: var(--muted); font-size: 12px; text-align:center; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Film Credits PNG Builder</h1>
+  <div class="pill">Single-file • Transparent PNG export • TSV-friendly</div>
+</header>
+
+<div class="app">
+  <aside class="panel" id="controls">
+    <h2>Data input</h2>
+
+    <div class="toggle" style="margin-bottom:6px;">
+      <input id="useTSV" type="checkbox">
+      <label for="useTSV" style="margin:0;">Use combined “Paste TSV” instead</label>
+    </div>
+
+    <div id="separateInputs">
+      <label for="titlesIn">Titles (one per line)</label>
+      <textarea id="titlesIn" placeholder="DIRECTOR&#10;PRODUCERS&#10;|&#10;CAST"></textarea>
+      <div class="hint">A lone <b>|</b> line means “skip this Title section (keep alignment)”.</div>
+
+      <label for="subtitlesIn">Subtitles (blocks separated by blank lines)</label>
+      <textarea id="subtitlesIn" placeholder="A Film By&#10;JANE DOE&#10;&#10;|&#10;&#10;Lead Cast&#10;Actor One"></textarea>
+      <div class="hint">Multiple subtitles per title. A block that is just <b>|</b> forces an empty subtitle block.</div>
+
+      <label for="bodiesIn">Bodies (blocks separated by blank lines)</label>
+      <textarea id="bodiesIn" placeholder="Jane Doe&#10;&#10;|&#10;&#10;Actor One&#10;Actor Two"></textarea>
+      <div class="hint">A block exactly <b>|</b> forces an empty body block.</div>
+    </div>
+
+    <div id="tsvInput" style="display:none;">
+      <label for="tsvIn">Paste TSV (Title<TAB>Subtitle1;Subtitle2<TAB>Body1;Body2)</label>
+      <textarea id="tsvIn" placeholder="DIRECTOR&#9;A film by;JANE DOE&#9;Jane Doe&#10;|&#9;|&#9;|&#10;CAST&#9;Lead Cast&#9;Actor One;Actor Two"></textarea>
+      <div class="hint">TSV: Title <b>|</b> = empty-title section, Subtitle <b>|</b> = no subtitles, Body <b>|</b> = no body.</div>
+    </div>
+
+    <div class="btnbar" style="margin-top:8px;">
+      <button class="ghost" id="exampleBtn">Load example</button>
+      <button class="warn" id="clearBtn">Clear</button>
+    </div>
+
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.06); margin:12px 0;">
+
+    <h2>Typography</h2>
+    <div class="grid">
+      <div><label>Title size (px)</label><input id="titleSize" type="number" min="1" value="80"></div>
+      <div><label>Title line-height</label><input id="titleLH" type="number" min="0.6" step="0.05" value="1.15"></div>
+      <div><label>Subtitle size (px)</label><input id="subtitleSize" type="number" min="1" value="48"></div>
+      <div><label>Subtitle line-height</label><input id="subtitleLH" type="number" min="0.6" step="0.05" value="1.2"></div>
+      <div><label>Body size (px)</label><input id="bodySize" type="number" min="1" value="32"></div>
+      <div><label>Body line-height</label><input id="bodyLH" type="number" min="0.6" step="0.05" value="1.25"></div>
+    </div>
+
+    <label>Text color</label>
+    <div class="row">
+      <input id="textColor" type="color" value="#ffffff" aria-label="Text color">
+      <input id="textColorHex" type="text" value="#ffffff" placeholder="#ffffff">
+    </div>
+
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.06); margin:12px 0;">
+
+    <h2>Spacing</h2>
+    <div class="grid">
+      <div><label>Title → Subtitle gap (px)</label><input id="gapTS" type="number" min="0" value="14"></div>
+      <div><label>Subtitle → Body gap (px)</label><input id="gapSB" type="number" min="0" value="10"></div>
+      <div style="grid-column:1/-1;">
+        <label><b>Body → next Title/Subtitle section gap (px)</b></label>
+        <input id="gapSection" type="number" min="0" value="40">
+      </div>
+    </div>
+
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.06); margin:12px 0;">
+
+    <h2>Canvas</h2>
+    <div class="grid">
+      <div><label>Width (px)</label><input id="canvasW" type="number" min="100" value="1080"></div>
+      <div>
+        <label>Height mode</label>
+        <select id="heightMode">
+          <option value="auto" selected>Auto (content + padding)</option>
+          <option value="fixed">Fixed height</option>
+        </select>
+      </div>
+      <div><label>Fixed height (px)</label><input id="canvasH" type="number" min="100" value="3840" disabled></div>
+      <div><label>Top padding (px)</label><input id="padTop" type="number" min="0" value="160"></div>
+      <div><label>Bottom padding (px)</label><input id="padBot" type="number" min="0" value="160"></div>
+
+      <div>
+        <label>Alignment</label>
+        <select id="alignment">
+          <option value="center" selected>Center</option>
+          <option value="left">Left</option>
+          <option value="right">Right</option>
+        </select>
+      </div>
+      <div><label>Side padding (px)</label><input id="padX" type="number" min="0" value="64"></div>
+
+      <div>
+        <label>Show safe guides</label>
+        <select id="showGuides">
+          <option value="yes" selected>Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+    </div>
+
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.06); margin:12px 0;">
+
+    <h2>Export</h2>
+    <div class="grid-3">
+      <div>
+        <label>Scale multiplier</label>
+        <select id="exportScale">
+          <option value="1">1×</option>
+          <option value="2">2×</option>
+          <option value="4" selected>4×</option>
+          <option value="6">6×</option>
+          <option value="8">8×</option>
+        </select>
+      </div>
+      <div style="grid-column:2/4;"><label>File name</label><input id="fileName" type="text" value="credits.png"></div>
+    </div>
+
+    <div class="btnbar" style="margin-top:8px;">
+      <button class="primary" id="downloadBtn">Download PNG</button>
+      <button class="ghost" id="copyMarkupBtn">Copy formatted text</button>
+    </div>
+
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.06); margin:12px 0;">
+
+    <h2>Save / Load</h2>
+    <div class="grid">
+      <div><label>Project file name</label><input id="projectName" type="text" value="credits-project.json"></div>
+      <div style="align-self:end;">
+        <button class="ghost" id="saveBtn" style="width:100%;">Save .json</button>
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>Load saved .json</label>
+        <input id="loadInput" type="file" accept="application/json">
+        <div class="hint">Restores inputs + settings.</div>
+      </div>
+    </div>
+
+    <div class="hint" id="exportHint" style="margin-top:8px;"></div>
+  </aside>
+
+  <main class="panel preview-wrap">
+    <div class="preview-toolbar">
+      <div class="stats" id="stats">No content yet.</div>
+      <div class="small">Preview background is checkerboard; export is transparent.</div>
+    </div>
+
+    <div class="preview-scroller" id="previewScroller">
+      <div class="guides" id="guides"><div></div><div></div><div></div></div>
+      <div id="creditsCanvas">
+        <div class="credits-inner" id="creditsInner">
+          <div class="empty-note">Paste credits to see preview.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  Embed-safe version: section gaps use margins; export captures full height.
+</footer>
+
+<script>
+  const $ = s => document.querySelector(s);
+  const els = {
+    useTSV: $("#useTSV"),
+    separateInputs: $("#separateInputs"),
+    tsvInput: $("#tsvInput"),
+    titlesIn: $("#titlesIn"),
+    subtitlesIn: $("#subtitlesIn"),
+    bodiesIn: $("#bodiesIn"),
+    tsvIn: $("#tsvIn"),
+
+    titleSize: $("#titleSize"),
+    subtitleSize: $("#subtitleSize"),
+    bodySize: $("#bodySize"),
+    titleLH: $("#titleLH"),
+    subtitleLH: $("#subtitleLH"),
+    bodyLH: $("#bodyLH"),
+
+    textColor: $("#textColor"),
+    textColorHex: $("#textColorHex"),
+
+    gapTS: $("#gapTS"),
+    gapSB: $("#gapSB"),
+    gapSection: $("#gapSection"),
+
+    canvasW: $("#canvasW"),
+    canvasH: $("#canvasH"),
+    heightMode: $("#heightMode"),
+    padTop: $("#padTop"),
+    padBot: $("#padBot"),
+    padX: $("#padX"),
+    alignment: $("#alignment"),
+    showGuides: $("#showGuides"),
+
+    exportScale: $("#exportScale"),
+    fileName: $("#fileName"),
+    downloadBtn: $("#downloadBtn"),
+    exportHint: $("#exportHint"),
+
+    projectName: $("#projectName"),
+    saveBtn: $("#saveBtn"),
+    loadInput: $("#loadInput"),
+
+    creditsCanvas: $("#creditsCanvas"),
+    creditsInner: $("#creditsInner"),
+    guides: $("#guides"),
+    stats: $("#stats"),
+    previewScroller: $("#previewScroller"),
+
+    exampleBtn: $("#exampleBtn"),
+    clearBtn: $("#clearBtn"),
+    copyMarkupBtn: $("#copyMarkupBtn"),
+  };
+
+  const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+  function normalizeHex(h){
+    h=(h||"").trim(); if(!h) return "#ffffff";
+    if(h[0]!=="#") h="#"+h;
+    if(/^#([0-9a-f]{3})$/i.test(h)){
+      const m=h.slice(1); return "#"+m.split("").map(c=>c+c).join("");
+    }
+    if(/^#([0-9a-f]{6})$/i.test(h)) return h.toLowerCase();
+    return "#ffffff";
+  }
+
+  function splitTitleLinesAllowPipe(text){
+    return (text||"")
+      .replace(/\r\n?/g,"\n")
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => l.length > 0)
+      .map(l => (l === "|") ? "" : l);
+  }
+
+  function splitBlocks(text, { allowPipeEmpty=false } = {}) {
+    const raw = (text || "").replace(/\r\n?/g, "\n");
+    const chunks = raw.split(/\n\s*\n+/g);
+    const blocks = [];
+    for (const chunk of chunks) {
+      const lines = chunk.split("\n").map(l => l.trim()).filter(Boolean);
+      if (allowPipeEmpty && lines.length === 1 && lines[0] === "|") {
+        blocks.push([]);
+        continue;
+      }
+      if (lines.length > 0) blocks.push(lines);
+    }
+    return blocks;
+  }
+
+  const splitSubtitleBlocks = (t)=> splitBlocks(t, { allowPipeEmpty:true });
+  const splitBodyBlocks     = (t)=> splitBlocks(t, { allowPipeEmpty:true });
+
+  function parseTSV(text){
+    const rows=(text||"").replace(/\r\n?/g,"\n").split("\n").map(r=>r.trim()).filter(Boolean);
+    const titles=[], subtitles=[], bodies=[];
+    for(const row of rows){
+      const cols=row.split("\t");
+
+      const titleCol=(cols[0]||"").trim();
+      titles.push(titleCol==="|" ? "" : titleCol);
+
+      const subCol=(cols[1]||"").trim();
+      if(subCol==="|") subtitles.push([]);
+      else subtitles.push(subCol ? subCol.split(/\s*;\s*/g).filter(x=>x && x!=="|") : []);
+
+      const bodyCol=(cols[2]||"").trim();
+      if(bodyCol==="|") bodies.push([]);
+      else bodies.push(bodyCol ? bodyCol.split(/\s*;\s*/g).filter(x=>x && x!=="|") : []);
+    }
+    return {titles, subtitles, bodies};
+  }
+
+  function buildSections({titles,subtitles,bodies}){
+    const out=[], count=titles.length;
+    for(let i=0;i<count;i++){
+      out.push({
+        title: titles[i] ?? "",
+        subtitles: subtitles[i] || [],
+        body: bodies[i] || []
+      });
+    }
+    return out;
+  }
+
+  function getData(){
+    if(els.useTSV.checked){
+      const {titles,subtitles,bodies}=parseTSV(els.tsvIn.value);
+      return buildSections({titles, subtitles, bodies});
+    } else {
+      const titles=splitTitleLinesAllowPipe(els.titlesIn.value);
+      const subtitleBlocks=splitSubtitleBlocks(els.subtitlesIn.value);
+      const bodyBlocks=splitBodyBlocks(els.bodiesIn.value);
+      return buildSections({titles, subtitles: subtitleBlocks, bodies: bodyBlocks});
+    }
+  }
+
+  function applyCSSVars(){
+    const w=clamp(+els.canvasW.value||1080,100,10000);
+    const mode=els.heightMode.value;
+    const h=clamp(+els.canvasH.value||3840,100,200000);
+
+    const padTop=clamp(+els.padTop.value||0,0,20000);
+    const padBot=clamp(+els.padBot.value||0,0,20000);
+    const padX=clamp(+els.padX.value||0,0,20000);
+
+    const titleSize=clamp(+els.titleSize.value||80,1,400);
+    const subtitleSize=clamp(+els.subtitleSize.value||48,1,300);
+    const bodySize=clamp(+els.bodySize.value||32,1,250);
+
+    const titleLH=clamp(+els.titleLH.value||1.15,0.6,3);
+    const subtitleLH=clamp(+els.subtitleLH.value||1.2,0.6,3);
+    const bodyLH=clamp(+els.bodyLH.value||1.25,0.6,3);
+
+    const gapTS=clamp(+els.gapTS.value||0,0,1000);
+    const gapSB=clamp(+els.gapSB.value||0,0,1000);
+    const gapSection=clamp(+els.gapSection.value||0,0,2000);
+
+    const color=normalizeHex(els.textColorHex.value||els.textColor.value);
+
+    const align=els.alignment.value;
+    const alignItems=(align==="left")?"flex-start":(align==="right")?"flex-end":"center";
+    const textAlign=(align==="center")?"center":align;
+
+    els.creditsCanvas.style.setProperty("--canvas-w", w+"px");
+    els.creditsCanvas.style.width=w+"px";
+    if(mode==="fixed"){
+      els.creditsCanvas.style.height=h+"px";
+      els.creditsCanvas.style.setProperty("--canvas-h", h+"px");
+    } else {
+      els.creditsCanvas.style.height="auto";
+      els.creditsCanvas.style.setProperty("--canvas-h", "auto");
+    }
+
+    const inner=els.creditsInner;
+    inner.style.setProperty("--pad-top", padTop+"px");
+    inner.style.setProperty("--pad-bot", padBot+"px");
+    inner.style.setProperty("--pad-x", padX+"px");
+
+    inner.style.setProperty("--title-size", titleSize+"px");
+    inner.style.setProperty("--subtitle-size", subtitleSize+"px");
+    inner.style.setProperty("--body-size", bodySize+"px");
+
+    inner.style.setProperty("--title-lh", titleLH);
+    inner.style.setProperty("--subtitle-lh", subtitleLH);
+    inner.style.setProperty("--body-lh", bodyLH);
+
+    inner.style.setProperty("--gap-ts", gapTS+"px");
+    inner.style.setProperty("--gap-sb", gapSB+"px");
+    inner.style.setProperty("--gap-section", gapSection+"px");
+
+    inner.style.setProperty("--text-color", color);
+    inner.style.setProperty("--align-items", alignItems);
+    inner.style.setProperty("--text-align", textAlign);
+
+    inner.classList.toggle("align-left", align==="left");
+    inner.classList.toggle("align-right", align==="right");
+
+    els.guides.style.display=(els.showGuides.value==="yes")?"grid":"none";
+  }
+
+  function renderPreview(){
+    applyCSSVars();
+    const sections=getData();
+    const inner=els.creditsInner;
+    inner.innerHTML="";
+
+    if(!sections.length){
+      inner.innerHTML=`<div class="empty-note">Paste credits to see preview.</div>`;
+      els.stats.textContent="No content yet.";
+      return;
+    }
+
+    const frag=document.createDocumentFragment();
+    const gapSectionVar = getComputedStyle(inner).getPropertyValue("--gap-section").trim() || "40px";
+
+    sections.forEach((s,idx)=>{
+      const sec=document.createElement("div");
+      sec.className="section";
+
+      // Section spacing now margin-based (embed-safe)
+      if (idx < sections.length - 1) {
+        sec.style.marginBottom = gapSectionVar;
+      }
+
+      if(s.title){
+        const t=document.createElement("div");
+        t.className="title";
+        t.textContent=s.title;
+        sec.appendChild(t);
+      }
+
+      const hasSubs=s.subtitles?.length;
+      if(s.title && hasSubs){
+        const g=document.createElement("div"); g.className="gap-ts"; sec.appendChild(g);
+      }
+      if(hasSubs){
+        const st=document.createElement("div");
+        st.className="subtitle";
+        st.textContent=s.subtitles.join("\n");
+        sec.appendChild(st);
+      }
+
+      const hasBody=s.body?.length;
+      if((s.title||hasSubs) && hasBody){
+        const g=document.createElement("div"); g.className="gap-sb"; sec.appendChild(g);
+      }
+      if(hasBody){
+        const b=document.createElement("div");
+        b.className="body";
+        b.textContent=s.body.join("\n");
+        sec.appendChild(b);
+      }
+
+      frag.appendChild(sec);
+    });
+
+    inner.appendChild(frag);
+
+    const contentH=inner.scrollHeight;
+    const w=+els.canvasW.value||1080;
+    const mode=els.heightMode.value;
+    const h=(mode==="fixed")?(+els.canvasH.value||3840):contentH;
+    els.stats.textContent=`Sections: ${sections.length} • Canvas: ${w}px × ${Math.round(h)}px • Align: ${els.alignment.value}`;
+  }
+
+  // EMBED-SAFE EXPORT: capture full credits height, not iframe viewport
+  async function downloadPNG(){
+    applyCSSVars();
+    const scale=parseFloat(els.exportScale.value||"4");
+    const filename=(els.fileName.value||"credits.png").trim();
+
+    const guidesPrev=els.guides.style.display;
+    els.guides.style.display="none";
+
+    // Measure full content height (includes padding)
+    const fullHeight = els.creditsInner.scrollHeight;
+
+    // Temporarily force export node to full height & remove clipping
+    const prevCanvasHeight = els.creditsCanvas.style.height;
+    els.creditsCanvas.style.height = fullHeight + "px";
+    els.creditsCanvas.style.setProperty("--canvas-h", fullHeight + "px");
+
+    const prevOverflow = els.previewScroller.style.overflow;
+    els.previewScroller.style.overflow = "visible";
+
+    await new Promise(r=>requestAnimationFrame(r));
+
+    let canvas;
+    try{
+      const width = els.creditsCanvas.offsetWidth;
+
+      canvas=await html2canvas(els.creditsCanvas,{
+        backgroundColor:null,
+        scale: scale*(window.devicePixelRatio||1),
+        useCORS:true, allowTaint:true, logging:false,
+
+        // force full export area
+        width,
+        height: fullHeight,
+        windowWidth: width,
+        windowHeight: fullHeight,
+        scrollX: 0,
+        scrollY: 0
+      });
+    }catch(e){
+      console.error(e);
+      els.exportHint.innerHTML=`<span class="danger">Export failed. Try smaller scale or set fixed height.</span>`;
+      els.guides.style.display=guidesPrev;
+      els.creditsCanvas.style.height = prevCanvasHeight;
+      els.previewScroller.style.overflow = prevOverflow;
+      return;
+    }
+
+    // restore layout
+    els.guides.style.display=guidesPrev;
+    els.creditsCanvas.style.height = prevCanvasHeight;
+    els.previewScroller.style.overflow = prevOverflow;
+    if (els.heightMode.value === "auto") {
+      els.creditsCanvas.style.setProperty("--canvas-h", "auto");
+    }
+
+    const url=canvas.toDataURL("image/png");
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=filename.endsWith(".png")?filename:(filename+".png");
+    document.body.appendChild(a); a.click(); a.remove();
+
+    els.exportHint.innerHTML=`<span class="ok">Exported:</span> ${canvas.width}px × ${canvas.height}px PNG (transparent).`;
+  }
+
+  function copyFormattedText(){
+    const sections=getData();
+    const lines=[];
+    sections.forEach((s,i)=>{
+      if(s.title) lines.push(s.title);
+      if(s.subtitles?.length) lines.push(...s.subtitles);
+      if(s.body?.length) lines.push(...s.body);
+      if(i<sections.length-1) lines.push("");
+    });
+    navigator.clipboard.writeText(lines.join("\n"))
+      .then(()=>els.exportHint.innerHTML=`<span class="ok">Copied formatted text.</span>`)
+      .catch(()=>els.exportHint.innerHTML=`<span class="danger">Couldn’t copy (clipboard blocked).</span>`);
+  }
+
+  // -------- Save / Load JSON --------
+  function getState() {
+    return {
+      version: 1,
+      useTSV: els.useTSV.checked,
+      inputs: {
+        titles: els.titlesIn.value,
+        subtitles: els.subtitlesIn.value,
+        bodies: els.bodiesIn.value,
+        tsv: els.tsvIn.value
+      },
+      settings: {
+        titleSize: +els.titleSize.value,
+        subtitleSize: +els.subtitleSize.value,
+        bodySize: +els.bodySize.value,
+        titleLH: +els.titleLH.value,
+        subtitleLH: +els.subtitleLH.value,
+        bodyLH: +els.bodyLH.value,
+        textColorHex: normalizeHex(els.textColorHex.value || els.textColor.value),
+        gapTS: +els.gapTS.value,
+        gapSB: +els.gapSB.value,
+        gapSection: +els.gapSection.value,
+        canvasW: +els.canvasW.value,
+        heightMode: els.heightMode.value,
+        canvasH: +els.canvasH.value,
+        padTop: +els.padTop.value,
+        padBot: +els.padBot.value,
+        alignment: els.alignment.value,
+        padX: +els.padX.value,
+        showGuides: els.showGuides.value,
+        exportScale: els.exportScale.value,
+        fileName: els.fileName.value
+      }
+    };
+  }
+
+  function applyState(state) {
+    if (!state || typeof state !== "object") throw new Error("Invalid state");
+
+    els.useTSV.checked = !!state.useTSV;
+    els.titlesIn.value = state.inputs?.titles ?? "";
+    els.subtitlesIn.value = state.inputs?.subtitles ?? "";
+    els.bodiesIn.value = state.inputs?.bodies ?? "";
+    els.tsvIn.value = state.inputs?.tsv ?? "";
+
+    els.separateInputs.style.display = els.useTSV.checked ? "none" : "block";
+    els.tsvInput.style.display = els.useTSV.checked ? "block" : "none";
+
+    const s = state.settings || {};
+    if (s.titleSize != null) els.titleSize.value = s.titleSize;
+    if (s.subtitleSize != null) els.subtitleSize.value = s.subtitleSize;
+    if (s.bodySize != null) els.bodySize.value = s.bodySize;
+    if (s.titleLH != null) els.titleLH.value = s.titleLH;
+    if (s.subtitleLH != null) els.subtitleLH.value = s.subtitleLH;
+    if (s.bodyLH != null) els.bodyLH.value = s.bodyLH;
+
+    if (s.textColorHex) {
+      els.textColorHex.value = normalizeHex(s.textColorHex);
+      els.textColor.value = els.textColorHex.value;
+    }
+
+    if (s.gapTS != null) els.gapTS.value = s.gapTS;
+    if (s.gapSB != null) els.gapSB.value = s.gapSB;
+    if (s.gapSection != null) els.gapSection.value = s.gapSection;
+
+    if (s.canvasW != null) els.canvasW.value = s.canvasW;
+    if (s.heightMode) els.heightMode.value = s.heightMode;
+    if (s.canvasH != null) els.canvasH.value = s.canvasH;
+    els.canvasH.disabled = els.heightMode.value !== "fixed";
+
+    if (s.padTop != null) els.padTop.value = s.padTop;
+    if (s.padBot != null) els.padBot.value = s.padBot;
+
+    if (s.alignment) els.alignment.value = s.alignment;
+    if (s.padX != null) els.padX.value = s.padX;
+    if (s.showGuides) els.showGuides.value = s.showGuides;
+
+    if (s.exportScale) els.exportScale.value = s.exportScale;
+    if (s.fileName != null) els.fileName.value = s.fileName;
+
+    renderPreview();
+  }
+
+  function saveJSON() {
+    const state = getState();
+    const json = JSON.stringify(state, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const name = (els.projectName.value || "credits-project.json").trim();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name.endsWith(".json") ? name : (name + ".json");
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    els.exportHint.innerHTML = `<span class="ok">Saved project JSON.</span>`;
+  }
+
+  function loadJSONFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const state = JSON.parse(reader.result);
+        applyState(state);
+        els.exportHint.innerHTML = `<span class="ok">Loaded project JSON.</span>`;
+      } catch (e) {
+        console.error(e);
+        els.exportHint.innerHTML = `<span class="danger">Could not load JSON: ${e.message}</span>`;
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // -------- Wiring --------
+  const reRenderIds=[
+    "titlesIn","subtitlesIn","bodiesIn","tsvIn",
+    "titleSize","subtitleSize","bodySize",
+    "titleLH","subtitleLH","bodyLH",
+    "gapTS","gapSB","gapSection",
+    "canvasW","canvasH","heightMode","padTop","padBot","padX",
+    "showGuides","textColor","textColorHex","alignment",
+    "exportScale","fileName"
+  ];
+  reRenderIds.forEach(id=>{
+    const el=$("#"+id);
+    el.addEventListener("input",renderPreview);
+    el.addEventListener("change",renderPreview);
+  });
+
+  els.useTSV.addEventListener("change",()=>{
+    els.separateInputs.style.display=els.useTSV.checked?"none":"block";
+    els.tsvInput.style.display=els.useTSV.checked?"block":"none";
+    renderPreview();
+  });
+
+  els.heightMode.addEventListener("change",()=>{
+    els.canvasH.disabled=els.heightMode.value!=="fixed";
+    renderPreview();
+  });
+
+  els.textColor.addEventListener("input",()=>{
+    els.textColorHex.value=els.textColor.value; renderPreview();
+  });
+  els.textColorHex.addEventListener("input",()=>{
+    const hx=normalizeHex(els.textColorHex.value);
+    els.textColor.value=hx; renderPreview();
+  });
+
+  els.downloadBtn.addEventListener("click",downloadPNG);
+  els.copyMarkupBtn.addEventListener("click",copyFormattedText);
+
+  els.saveBtn.addEventListener("click", saveJSON);
+  els.loadInput.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) loadJSONFile(file);
+    e.target.value = "";
+  });
+
+  els.exampleBtn.addEventListener("click",()=>{
+    els.useTSV.checked=false;
+    els.separateInputs.style.display="block";
+    els.tsvInput.style.display="none";
+
+    els.titlesIn.value =
+`Produced by
+Special thanks
+Additional footage
+Thanks
+Music
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+Performers
+Assistants`;
+
+    els.subtitlesIn.value =
+`Lesley Riddoch
+Gavin Hanigan
+
+|
+
+|
+
+|
+
+The Mini Vandals
+
+Juha-Matti Paska
+
+Schwartzy
+
+Reino Palmrothin
+
+Dan Boden
+
+Fredrik Pacius
+
+Gavin Hanigan
+
+National Sweetheart
+
+Olli Suolahti
+
+Robert Kajanus
+
+Tapio Rautavaara
+
+`;
+
+    els.bodiesIn.value =
+`|
+
+Seija Linnanmäki
+Juha Kahila
+Tarja Kinnunen
+Leni Leonsaari
+Janne Kontturi
+Stina Halmetoja
+Paula Luopio
+Pasi Sahlberg
+Benin
+Elias Ali
+Kalle Kallio
+Ville Kivimäki
+Jukka Viitanen
+Pasi Järvelin
+Heikki Ranta
+Jussi Korhonen
+Sanni Seppo
+Kari Huhtala
+Heikki Mäntymäki
+Pasi Rajala
+
+Europeana
+Federal Archives of Germany
+Finnish Defence Force, SA-kuva
+Greenpeace Nordic, Finland
+historicalmapchart.net
+iadsa.org
+mapchart.net
+Museovirasto
+MyHelsinki
+Pellervo
+S-ryhmä
+Sanni Seppo and Ritva Kovalainen
+Valio
+Visit Finland
+Visit Tampere
+Wikimedia
+World Economic Forum
+YLE
+
+Joe Kallio-Myers
+Emma Gurung
+Juuso Lindgren
+Kirsi Lounela
+Mira Kattilakoski
+Tomi Tynkkynen
+Hedi Lundberg
+Ada
+Hamza
+Jussi Toivanen
+Julia Donner
+OP Uusimaa, Arkadia Branch
+
+Lace Tablecloths
+Obon Fog
+Drifitng Memories
+Lift Up
+M Fischer
+Les-ly
+Inconsciousness
+Crater Lake
+Portcullis
+Powdered Waltz
+
+Painutaan vittuun, beibi
+Lohtulaulu
+
+Wind-Up Mountains
+Garythargy
+
+Mannankorvan Maila
+
+Mongrel Dance
+
+Maamme (Our Land)
+
+Incidental Music
+
+Videodrome
+
+Morsiamen Polkka
+
+Narvan Marssi
+
+Juokse sinä humma
+
+|
+
+Anssi Väisänen
+Gavin Hanigan
+Heikki Ranta
+Jaakko Mäkinen
+Jani Nurhonen
+Jarkko Jalovaara
+Leo Laitinen
+
+Ami Toikka
+Anssi Väisänen
+Elena Liikanen
+Elisa Kallio
+Marika Lahti
+Mark Richardson`;
+
+    renderPreview();
+  });
+
+  els.clearBtn.addEventListener("click",()=>{
+    els.titlesIn.value=""; els.subtitlesIn.value=""; els.bodiesIn.value=""; els.tsvIn.value="";
+    els.exportHint.textContent=""; renderPreview();
+  });
+
+  renderPreview();
+</script>
+
+<style>.mav-badge{position:fixed;bottom:14px;left:14px;z-index:9999;opacity:.28;transition:opacity .2s;line-height:0;}.mav-badge:hover{opacity:1;}</style>
+<a href="../index.html" class="mav-badge" aria-label="gav.fi tools">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges">
+    <rect x="3"  y="0" width="8" height="1" fill="#fbf236"/>
+    <rect x="0"  y="1" width="4" height="1" fill="#fbf236"/><rect x="4"  y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/>
+    <rect x="0"  y="2" width="1" height="1" fill="#ffce10"/><rect x="1"  y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/>
+    <rect x="0"  y="3" width="2" height="1" fill="#ffce10"/><rect x="2"  y="3" width="3" height="1" fill="#222034"/><rect x="5"  y="3" width="1" height="1" fill="#ffce10"/><rect x="6"  y="3" width="1" height="1" fill="#fbf236"/><rect x="7"  y="3" width="2" height="1" fill="#222034"/><rect x="9"  y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/>
+    <rect x="1"  y="4" width="2" height="1" fill="#ffce10"/><rect x="3"  y="4" width="3" height="1" fill="#222034"/><rect x="6"  y="4" width="1" height="1" fill="#fbf236"/><rect x="7"  y="4" width="2" height="1" fill="#222034"/><rect x="9"  y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/>
+    <rect x="2"  y="5" width="2" height="1" fill="#ffce10"/><rect x="4"  y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/>
+    <rect x="3"  y="6" width="2" height="1" fill="#ffce10"/><rect x="5"  y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/>
+    <rect x="4"  y="7" width="7" height="1" fill="#ffce10"/>
+  </svg>
+</a>
+</body>
+</html>

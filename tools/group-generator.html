@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Generator 1.4 — Aalto EE</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg:       #f3efed;
+  --card-bg:  #ffffff;
+  --panel-bg: #edeae8;
+  --border:   #d4ceca;
+  --muted:    #7a6f6a;
+  --dark:     #222034;
+  --brand:    #45004d;
+  --orange:   #efa551;
+  --orange-h: #d48a3a;
+  --yellow:   #ffd966;
+  --r-card:   12px;
+  --r-input:  6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  margin: 0;
+  padding: 20px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.container { max-width: 980px; margin: 0 auto; }
+
+/* ── Header ──────────────────────────────────────────── */
+.app-header { margin-bottom: 28px; }
+h1 { font-size: 2rem; font-weight: 800; color: var(--brand); margin: 0 0 4px; }
+.subtitle { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin: 0; }
+
+/* ── Cards ───────────────────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+
+.hint { font-size: 0.8rem; color: var(--muted); margin: 0 0 14px; }
+.parse-info { font-size: 0.82rem; font-weight: 600; color: var(--brand); margin: 10px 0 0; }
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+/* ── Tabs ────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--panel-bg);
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.tab-btn:not(:last-child) { border-right: 1px solid var(--border); }
+.tab-btn.active { background: var(--brand); color: #fff; }
+
+/* ── Form elements ───────────────────────────────────── */
+.form-group { margin-bottom: 14px; }
+.form-group > label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+
+textarea, input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  color: var(--dark);
+  background: var(--card-bg);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+textarea { min-height: 160px; resize: vertical; }
+input[type="number"] { width: 100px; }
+textarea:focus, input:focus { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,217,102,0.3); }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn-primary {
+  padding: 10px 22px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-input);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--orange-h); transform: translateY(-1px); }
+
+.btn-secondary {
+  padding: 10px 18px;
+  background: var(--panel-bg);
+  color: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: var(--border); }
+
+.btn-ghost {
+  padding: 5px 10px;
+  background: none;
+  color: var(--brand);
+  border: 1px dashed var(--brand);
+  border-radius: var(--r-input);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { background: #f5eef7; }
+
+.icon-btn {
+  padding: 3px 7px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: #fde8e8; color: #c0392b; border-color: #f5c6cb; }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+
+/* ── Manual entry ────────────────────────────────────── */
+.chip-area { margin-bottom: 12px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.chip-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0 2px;
+  line-height: 1;
+}
+.chip-del:hover { color: #c0392b; }
+
+.add-col-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.add-col-row input[type="text"] { width: auto; flex: 1; padding: 7px 10px; font-size: 0.82rem; }
+
+.add-col-row .add-col-btn {
+  padding: 7px 14px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-input);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.manual-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.manual-table-wrap { margin-top: 16px; }
+.manual-count { font-size: 0.78rem; font-weight: 600; color: var(--brand); margin-bottom: 8px; }
+
+.manual-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.manual-table th { background: var(--panel-bg); font-weight: 700; padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+.manual-table td { padding: 6px 10px; border-bottom: 1px solid var(--panel-bg); }
+.manual-table tr:last-child td { border-bottom: none; }
+
+/* ── Column cards ─────────────────────────────────────── */
+.column-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 12px; }
+
+.col-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  transition: border-color 0.2s;
+}
+.col-card--name { border-color: var(--brand); background: #f5eef7; }
+.col-card--partition { border-color: #cc00cc; background: #fdf0fd; }
+
+.col-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.col-name { font-size: 0.82rem; font-weight: 700; color: var(--dark); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.type-select {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.type-select:focus { border-color: var(--yellow); }
+
+.col-samples { font-size: 0.7rem; color: var(--muted); margin-bottom: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.name-badge { font-size: 0.68rem; font-weight: 600; color: var(--brand); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Balance / Partition / Off segmented control */
+.use-row { display: flex; gap: 3px; margin-bottom: 6px; }
+
+.use-opt {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 0.68rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.use-opt:hover { background: var(--border); color: var(--dark); }
+.use-opt.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+.use-opt.active-partition { background: #cc00cc; color: #fff; border-color: #cc00cc; }
+.use-opt.active-off { background: var(--panel-bg); color: var(--muted); border-color: var(--border); font-style: italic; }
+
+.weight-row { display: flex; gap: 3px; }
+.weight-btn {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 0.68rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.weight-btn.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+.weight-btn:hover:not(.active) { background: var(--border); color: var(--dark); }
+
+/* ── Partition panel ─────────────────────────────────── */
+.partition-panel {
+  background: #fdf0fd;
+  border: 1px solid #cc00cc44;
+  border-radius: 10px;
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.partition-panel .section-title { border-bottom-color: #cc00cc44; }
+
+.assign-row {
+  display: grid;
+  grid-template-columns: 1fr 40px auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+.assign-row:last-child { border-bottom: none; }
+
+.assign-val { font-size: 0.82rem; font-weight: 600; }
+.assign-count { font-size: 0.75rem; color: var(--muted); text-align: right; }
+
+.assign-select {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  outline: none;
+  cursor: pointer;
+  width: 140px;
+}
+
+.pool-summaries { margin-top: 16px; padding-top: 14px; border-top: 1px solid #cc00cc33; }
+
+.pool-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pool-name-inp {
+  width: 100px !important;
+  font-weight: 700;
+  font-size: 0.82rem !important;
+  padding: 5px 8px !important;
+  border-color: #cc00cc44;
+}
+
+.pool-n-inp {
+  width: 60px !important;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pool-meta { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+.partition-stats { font-size: 0.75rem; color: var(--muted); margin-top: 8px; }
+.unassigned-note { font-size: 0.75rem; color: var(--muted); font-style: italic; margin: 6px 0 0; }
+
+/* ── Group settings ──────────────────────────────────── */
+.mode-toggle { display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap; }
+.radio-label { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--dark); user-select: none; }
+.radio-label input[type="radio"] { accent-color: var(--orange); cursor: pointer; width: 15px; height: 15px; }
+.mode-inputs { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+
+/* ── Constraints section ─────────────────────────────── */
+.constraints-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.constraint-box {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.locks-list { max-height: 200px; overflow-y: auto; }
+
+.lock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.lock-row:last-child { border-bottom: none; }
+.lock-name { font-size: 0.8rem; font-weight: 600; flex: 1; }
+.lock-select { font-family: 'Montserrat', sans-serif; font-size: 0.75rem; padding: 3px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); cursor: pointer; outline: none; max-width: 130px; }
+
+.avoid-add-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: end; margin-bottom: 10px; }
+.avoid-add-row input { font-size: 0.82rem; }
+.avoid-add-row button { white-space: nowrap; }
+
+.avoid-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.avoid-row:last-child { border-bottom: none; }
+
+/* ── Overall stats ───────────────────────────────────── */
+.stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.stat-chip { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; text-align: center; min-width: 90px; }
+.stat-val { display: block; font-size: 1.6rem; font-weight: 800; color: var(--brand); line-height: 1; }
+.stat-lbl { display: block; font-size: 0.65rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+
+/* ── Group cards ─────────────────────────────────────── */
+.groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+
+.group-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; }
+
+.group-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; margin-bottom: 8px; border-bottom: 2px solid var(--panel-bg); }
+
+.group-label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--brand);
+  cursor: text;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.group-label:hover { border-bottom-color: var(--border); }
+.group-label:focus { border-bottom-color: var(--yellow); }
+
+.group-count { font-size: 0.72rem; font-weight: 600; color: var(--muted); background: var(--panel-bg); padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.group-stats-line { font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); line-height: 1.6; }
+
+.member-list { list-style: none; padding: 0; margin: 0 0 12px; }
+.member-item { padding: 6px 0; border-bottom: 1px solid var(--panel-bg); }
+.member-item:last-child { border-bottom: none; }
+.member-name { display: block; font-size: 0.85rem; font-weight: 700; color: var(--dark); }
+.member-detail { display: block; font-size: 0.73rem; color: var(--muted); margin-top: 1px; }
+.member-locked .member-name { color: var(--brand); }
+.lock-icon { font-size: 0.7rem; }
+
+.copy-btn { padding: 5px 12px; background: var(--panel-bg); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; font-size: 0.72rem; font-family: 'Montserrat', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.copy-btn:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+/* ── Simple / Advanced mode ──────────────────────────── */
+body.simple-mode .adv-only { display: none !important; }
+body:not(.simple-mode) .simple-only { display: none !important; }
+
+/* Column card controls hidden in simple mode */
+body.simple-mode .col-card .type-select { display: none !important; }
+body.simple-mode .col-card .use-opt[data-mode="partition"] { display: none !important; }
+body.simple-mode .col-card .weight-row { display: none !important; }
+
+/* Header: push mode toggle to right */
+.app-header-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mode-toggle-btn {
+  margin-top: 4px;
+  flex-shrink: 0;
+  font-size: 0.76rem;
+}
+
+/* In advanced mode, highlight the toggle to show it's active */
+body:not(.simple-mode) .mode-toggle-btn {
+  background: #f5eef7;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ── Session bar ─────────────────────────────────────── */
+.session-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.session-bar input[type="text"] {
+  width: auto;
+  flex: 1;
+  min-width: 160px;
+  max-width: 300px;
+}
+
+.session-load-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+}
+
+.session-load-label input[type="file"] {
+  display: none;
+}
+
+/* ── Roster ──────────────────────────────────────────── */
+.roster-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.roster-summary-text {
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex: 1;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.roster-table th {
+  background: var(--panel-bg);
+  font-weight: 700;
+  padding: 7px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+
+.roster-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--panel-bg);
+  vertical-align: middle;
+}
+
+.roster-row:last-child td { border-bottom: none; }
+.roster-row { transition: background 0.1s; }
+.roster-row:hover { background: var(--panel-bg); }
+.roster-add-row td { border-top: 2px dashed var(--border) !important; background: #f9f7f5; }
+
+.roster-disabled td:not(.roster-actions) {
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+td.roster-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.roster-inp {
+  padding: 3px 7px !important;
+  font-size: 0.78rem !important;
+  min-width: 80px;
+}
+
+/* ── Drag states ─────────────────────────────────────── */
+.member-item { cursor: grab; }
+.member-item:active { cursor: grabbing; }
+.member-item.dragging { opacity: 0.3; }
+
+.member-list.drag-over {
+  background: rgba(255, 217, 102, 0.15);
+  border-radius: 6px;
+  outline: 2px dashed var(--yellow);
+  outline-offset: 2px;
+}
+
+.drag-accept {
+  border-color: var(--orange) !important;
+  box-shadow: 0 0 0 3px rgba(239,165,81,0.28) !important;
+}
+
+/* ── Avoid drag handle ───────────────────────────────── */
+.avoid-drag-handle {
+  font-size: 0.95rem;
+  color: var(--muted);
+  cursor: grab;
+  margin-right: 6px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ── History section ─────────────────────────────────── */
+.history-item {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.history-label-inp {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--brand);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 3px 7px;
+  background: transparent;
+  width: auto;
+  min-width: 120px;
+}
+
+.history-label-inp:hover { border-color: var(--border); }
+.history-label-inp:focus {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 2px rgba(255,217,102,0.3);
+  outline: none;
+  background: var(--card-bg);
+}
+
+.history-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  flex: 1;
+}
+
+.history-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.history-group {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+}
+
+.history-group strong {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--brand);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 4px;
+}
+
+.history-group span {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── Utilities ───────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 700px) {
+  .groups-grid { grid-template-columns: 1fr; }
+  .constraints-grid { grid-template-columns: 1fr; }
+  .stats-row { gap: 8px; }
+  .stat-chip { flex: 1; min-width: 70px; }
+  h1 { font-size: 1.5rem; }
+  .avoid-add-row { grid-template-columns: 1fr 1fr; }
+  .avoid-add-row button { grid-column: 1/-1; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 12px; }
+  .card { padding: 16px; }
+  .column-cards { grid-template-columns: 1fr 1fr; }
+}
+
+</style>
+</head>
+<body class="simple-mode">
+<div class="container">
+
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div>
+        <h1>Group Generator</h1>
+        <p class="subtitle">Aalto EE &middot; Smart Grouping Tool &middot; v1.4</p>
+      </div>
+      <button id="modeToggleBtn" class="btn-ghost mode-toggle-btn">⚙ Advanced</button>
+      <a href="../index.html" style="margin-left:12px;opacity:.45;transition:opacity .2s;line-height:0;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='.45'" title="gav.fi tools">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="32" viewBox="0 0 12 8" shape-rendering="crispEdges">
+          <rect x="4" y="0" width="4" height="1" fill="#f5c842"/>
+          <rect x="3" y="1" width="6" height="1" fill="#f5c842"/>
+          <rect x="2" y="2" width="2" height="1" fill="#f5c842"/><rect x="5" y="2" width="2" height="1" fill="#111"/><rect x="8" y="2" width="2" height="1" fill="#f5c842"/>
+          <rect x="2" y="3" width="8" height="1" fill="#f5c842"/>
+          <rect x="3" y="4" width="2" height="1" fill="#f5c842"/><rect x="6" y="4" width="1" height="1" fill="#e05c2a"/><rect x="7" y="4" width="2" height="1" fill="#f5c842"/>
+          <rect x="3" y="5" width="6" height="1" fill="#f5c842"/>
+          <rect x="2" y="6" width="2" height="1" fill="#f5c842"/><rect x="8" y="6" width="2" height="1" fill="#f5c842"/>
+          <rect x="2" y="7" width="2" height="1" fill="#f5c842"/><rect x="8" y="7" width="2" height="1" fill="#f5c842"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Session Bar ───────────────────────────────────────────────── -->
+  <div class="session-bar adv-only">
+    <input type="text" id="cohort-name" placeholder="Cohort name…">
+    <button id="saveSessionBtn" class="btn-secondary">↓ Save Session</button>
+    <label class="btn-secondary session-load-label">
+      ↑ Load Session
+      <input type="file" id="loadSessionInput" accept=".json">
+    </label>
+  </div>
+
+  <!-- ── Step 1: Add Students ───────────────────────────────────────── -->
+  <div class="card">
+    <div class="section-title">Step 1 — Add Students</div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-paste">📋 Paste from Excel</button>
+      <button class="tab-btn adv-only" id="tab-manual">✏️ Enter Manually</button>
+    </div>
+
+    <!-- Paste panel -->
+    <div id="panel-paste">
+      <p class="hint">Copy any table directly from Excel — include the header row. Any columns work.</p>
+      <div class="form-group">
+        <label for="studentData">Paste your data here</label>
+        <textarea id="studentData" placeholder="Paste Excel data here (headers in the first row)…"></textarea>
+      </div>
+    </div>
+
+    <!-- Manual entry panel -->
+    <div id="panel-manual" class="hidden">
+      <p class="hint">Define your columns, then add people one by one. Press Enter to jump between fields.</p>
+
+      <div class="chip-area">
+        <div class="section-title" style="margin-bottom:8px;">Columns</div>
+        <div id="col-chips" class="chip-row"></div>
+        <div class="add-col-row">
+          <input type="text" id="new-col-inp" placeholder="New column name…">
+          <button class="add-col-btn" id="add-col-btn">+</button>
+          <button class="btn-ghost" id="mba-preset-btn">MBA defaults</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:8px;">Add a person</div>
+      <div id="manual-form" class="manual-form"></div>
+      <button class="btn-primary" id="add-person-btn">Add Person</button>
+
+      <div id="manual-list-wrap" class="manual-table-wrap hidden">
+        <div class="manual-count" id="manual-count"></div>
+        <table class="manual-table">
+          <thead id="manual-thead"></thead>
+          <tbody id="manual-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Autocomplete datalist for avoid-pair inputs -->
+    <datalist id="student-names-list"></datalist>
+
+    <p id="parseInfo" class="parse-info hidden"></p>
+    <div class="btn-row">
+      <button id="parseBtn" class="btn-primary">Parse Data →</button>
+      <button id="clearBtn" class="btn-secondary">Clear All</button>
+    </div>
+  </div>
+
+  <!-- ── Roster ────────────────────────────────────────────────────── -->
+  <div class="card hidden adv-only" id="card-roster">
+    <div class="roster-header">
+      <div class="section-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0;">Roster</div>
+      <span id="roster-summary" class="roster-summary-text"></span>
+      <button id="roster-add-btn" class="btn-ghost" style="font-size:0.76rem">+ Add</button>
+      <button id="roster-collapse-btn" class="icon-btn">▼</button>
+    </div>
+    <div id="roster-body">
+      <table class="roster-table">
+        <thead id="roster-thead"></thead>
+        <tbody id="roster-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Step 2 + 3: Configure + Generate ──────────────────────────── -->
+  <div class="card hidden" id="card-config">
+
+    <div class="section-title">Step 2 — Configure Columns</div>
+    <p class="hint simple-only">Tick the columns you'd like to balance across groups.</p>
+    <p class="hint adv-only">
+      Each column was auto-detected. Change the type if needed, then choose:
+      <strong>Balance</strong> (spread evenly), <strong>Partition</strong> (keep values in separate pools), or <strong>Off</strong>.
+    </p>
+    <div id="columnCards" class="column-cards"></div>
+
+    <!-- Partition panel (visible when a column is set to Partition) -->
+    <div id="partition-panel" class="partition-panel hidden adv-only">
+      <div class="section-title">Pool Configuration — <span id="partition-col-name"></span></div>
+      <p class="hint">Assign each value to a pool. People in different pools will never be grouped together.</p>
+
+      <div id="pool-assignments"></div>
+
+      <div id="pool-summaries" class="pool-summaries"></div>
+      <p class="partition-stats" id="partition-stats"></p>
+
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn-secondary" id="add-pool-btn">+ Add Pool</button>
+      </div>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Group Settings: global (hidden when partition active) -->
+    <div id="global-group-settings">
+      <div class="section-title">Step 3 — Group Settings</div>
+      <div class="mode-toggle">
+        <label class="radio-label">
+          <input type="radio" name="groupMode" value="count" checked> Number of groups
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="groupMode" value="size"> People per group
+        </label>
+      </div>
+      <div class="mode-inputs">
+        <div class="form-group" id="input-count">
+          <label for="numGroups">How many groups?</label>
+          <input type="number" id="numGroups" min="2" max="99" value="4">
+        </div>
+        <div class="form-group hidden" id="input-size">
+          <label for="groupSize">People per group</label>
+          <input type="number" id="groupSize" min="2" max="99" value="5">
+        </div>
+      </div>
+    </div>
+
+    <div class="adv-only">
+      <hr class="section-divider">
+
+      <!-- Step 4 (pre-generation): Constraints -->
+      <div class="section-title">Step 4 — Constraints <span style="font-size:0.65rem;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(optional)</span></div>
+      <p class="hint">Lock specific people to a group, or prevent certain pairs from being grouped together.</p>
+
+      <div class="constraints-grid">
+        <div class="constraint-box">
+          <div class="section-title">Lock to group</div>
+          <p class="hint" style="margin-bottom:8px;">Pin people to a specific group. Generate first, then lock, then regenerate.</p>
+          <div id="locks-list" class="locks-list">
+            <p class="hint">Generate groups first to enable locking.</p>
+          </div>
+        </div>
+
+        <div class="constraint-box">
+          <div class="section-title">Avoid pairs</div>
+          <p class="hint" style="margin-bottom:8px;">These two people will never be placed in the same group.</p>
+          <div class="avoid-add-row">
+            <input type="text" id="avoid-a" placeholder="Person A" list="student-names-list">
+            <input type="text" id="avoid-b" placeholder="Person B" list="student-names-list">
+            <button class="btn-secondary" id="add-avoid-btn">Add rule</button>
+          </div>
+          <div id="avoid-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top: 20px;">
+      <button id="generateBtn" class="btn-primary">Generate Groups →</button>
+    </div>
+
+  </div>
+
+  <!-- ── Results ────────────────────────────────────────────────────── -->
+  <div id="section-results" class="hidden">
+    <div class="card">
+      <div class="section-title">Results</div>
+      <div id="overallStats" class="stats-row"></div>
+      <div class="btn-row">
+        <button id="regenerateBtn" class="btn-primary">Regenerate →</button>
+        <button id="downloadCsvBtn" class="btn-secondary">↓ CSV</button>
+        <button id="downloadTxtBtn" class="btn-secondary">↓ TXT</button>
+        <button id="copyAllBtn" class="btn-secondary">⎘ Copy All</button>
+        <button id="downloadAppletBtn" class="btn-secondary">⬇ Download Applet</button>
+      </div>
+    </div>
+    <div id="groupsContainer" class="groups-grid"></div>
+  </div>
+
+  <!-- ── Session History ───────────────────────────────────────────── -->
+  <div id="section-history" class="hidden adv-only">
+    <div class="card">
+      <div class="section-title">Session History</div>
+      <p class="hint">A record of all group arrangements generated in this cohort session.</p>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+</div>
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+let rawRows          = [];
+let columnDefs       = [];
+let students         = [];      // { displayName, values, disabled }
+let groups           = [];      // Student[][]
+let groupLabels      = [];      // string[] — parallel to groups
+let partitionCfg     = null;
+let isManualMode     = false;
+let manualHeaders    = ['Name', 'Nationality', 'Gender', 'Date of Birth', 'Student Type'];
+let manualRows       = [];
+let poolIdSeq        = 1;
+let locks            = {};      // { displayName: groupIndex }
+let avoidPairs       = [];      // [string, string][]
+let sessionHistory   = [];      // { date, label, groups: string[][], groupLabels }
+let editingStudentIdxs = new Set();
+let isAddingToRoster   = false;
+let dragPayload      = null;    // { type: 'member'|'student', name, gi? }
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function stdDev(arr) {
+  if (arr.length < 2) return 0;
+  const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+  return Math.sqrt(arr.reduce((s, v) => s + (v - mean) ** 2, 0) / arr.length);
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  if (str.includes('.')) {
+    const [d, m, y] = str.split('.').map(Number);
+    if (d && m && y) return new Date(y < 100 ? y + 2000 : y, m - 1, d);
+  }
+  if (str.includes('/')) {
+    const [a, b, c] = str.split('/').map(Number);
+    const [d, m, y] = a > 12 ? [a, b, c] : [b, a, c];
+    if (d && m && y) return new Date(y < 100 ? y + 2000 : y, m - 1, d);
+  }
+  const dt = new Date(str);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
+function dateToAge(str) {
+  const d = parseDate(str);
+  if (!d) return null;
+  const t = new Date();
+  let age = t.getFullYear() - d.getFullYear();
+  if (t.getMonth() < d.getMonth() || (t.getMonth() === d.getMonth() && t.getDate() < d.getDate())) age--;
+  return age;
+}
+
+function toNumeric(v, type) {
+  if (type === 'numeric') return parseFloat(v) || 0;
+  if (type === 'date') { const d = parseDate(v); return d ? d.getTime() : 0; }
+  return 0;
+}
+
+function downloadFile(content, name, mime) {
+  const url = URL.createObjectURL(new Blob([content], { type: mime }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function flash(el, msg, ms = 1600) {
+  const orig = el.textContent; el.textContent = msg;
+  setTimeout(() => el.textContent = orig, ms);
+}
+
+// ── Column Detection ──────────────────────────────────────────────────────
+const GENDER_RX = /^(m|f|male|female|man|woman|masculine|feminine|non-binary|nb|divers|other|x)$/i;
+const DATE_RX   = /^\d{1,2}[.\/\-]\d{1,2}[.\/\-]\d{2,4}$|^\d{4}[.\/\-]\d{1,2}[.\/\-]\d{1,2}$/;
+const NAME_HDR  = /name|student|participant|person|member|learner|attendee/i;
+
+function detectType(header, values) {
+  const s = values.filter(v => v.trim()).slice(0, 30);
+  if (!s.length) return 'ignore';
+  if (NAME_HDR.test(header)) return 'name';
+  const r = fn => s.filter(v => fn(v.trim())).length / s.length;
+  if (r(v => GENDER_RX.test(v)) > 0.5) return 'gender';
+  if (r(v => DATE_RX.test(v)) > 0.5) return 'date';
+  if (r(v => !isNaN(parseFloat(v)) && v !== '') > 0.7) return 'numeric';
+  return 'categorical';
+}
+
+// ── Data Parsing ──────────────────────────────────────────────────────────
+function parseRawData(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return false;
+
+  const headers = lines[0].split('\t').map(h => h.trim());
+  rawRows = lines.slice(1).map(line => {
+    const cells = line.split('\t').map(c => c.trim());
+    while (cells.length < headers.length) cells.push('');
+    return cells.slice(0, headers.length);
+  }).filter(r => r.some(c => c));
+
+  columnDefs = headers.map((header, i) => {
+    const vals = rawRows.map(r => r[i] || '');
+    const type = detectType(header, vals);
+    return {
+      index: i, header, type,
+      useForBalancing: type !== 'name' && type !== 'ignore',
+      useAsPartition: false,
+      weight: 'medium',
+      samples: [...new Set(vals.filter(v => v))].slice(0, 4)
+    };
+  });
+
+  if (!columnDefs.some(c => c.type === 'name')) {
+    columnDefs[0].type = 'name';
+    columnDefs[0].useForBalancing = false;
+  }
+
+  const nameCol = columnDefs.find(c => c.type === 'name');
+  students = rawRows
+    .map(row => ({ displayName: row[nameCol.index] || '', values: row, disabled: false }))
+    .filter(s => s.displayName);
+
+  return students.length > 0;
+}
+
+// ── Column Config UI ──────────────────────────────────────────────────────
+const TYPE_OPTIONS = [
+  { value: 'name', label: 'Name' },
+  { value: 'gender', label: 'Gender' },
+  { value: 'date', label: 'Date / Age' },
+  { value: 'numeric', label: 'Number' },
+  { value: 'categorical', label: 'Category' },
+  { value: 'ignore', label: 'Ignore' }
+];
+
+function renderColumnCards() {
+  const container = document.getElementById('columnCards');
+  container.innerHTML = '';
+
+  columnDefs.forEach(col => {
+    const isName   = col.type === 'name';
+    const isIgnore = col.type === 'ignore';
+    const canUse   = !isName && !isIgnore;
+    const useMode  = col.useAsPartition ? 'partition' : col.useForBalancing ? 'balance' : 'off';
+
+    const typeOpts = TYPE_OPTIONS.map(o =>
+      `<option value="${o.value}"${col.type === o.value ? ' selected' : ''}>${o.label}</option>`
+    ).join('');
+
+    const useControls = canUse ? `
+      <div class="use-row">
+        <button class="use-opt${useMode === 'balance' ? ' active' : ''}" data-idx="${col.index}" data-mode="balance">Balance</button>
+        <button class="use-opt${useMode === 'partition' ? ' active-partition' : ''}" data-idx="${col.index}" data-mode="partition">Partition</button>
+        <button class="use-opt${useMode === 'off' ? ' active-off' : ''}" data-idx="${col.index}" data-mode="off">Off</button>
+      </div>
+      ${useMode === 'balance' ? `
+        <div class="weight-row">
+          ${['low','medium','high'].map(w =>
+            `<button class="weight-btn${col.weight === w ? ' active' : ''}" data-idx="${col.index}" data-weight="${w}">${w[0].toUpperCase() + w.slice(1)}</button>`
+          ).join('')}
+        </div>` : ''}
+    ` : isName ? `<div class="name-badge">Identifier</div>` : '';
+
+    const card = document.createElement('div');
+    card.className = `col-card${col.useAsPartition ? ' col-card--partition' : isName ? ' col-card--name' : ''}`;
+    card.dataset.idx = col.index;
+    card.innerHTML = `
+      <div class="col-card-header">
+        <span class="col-name" title="${col.header}">${col.header}</span>
+        <select class="type-select" data-idx="${col.index}">${typeOpts}</select>
+      </div>
+      <div class="col-samples">${col.samples.join(' · ') || '—'}</div>
+      ${useControls}
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ── Partition Panel ───────────────────────────────────────────────────────
+function initPartitionConfig(colIndex) {
+  const active = students.filter(s => !s.disabled);
+  const values = [...new Set(active.map(s => s.values[colIndex]).filter(v => v))];
+  const prev = partitionCfg?.colIndex === colIndex ? partitionCfg : null;
+
+  partitionCfg = {
+    colIndex,
+    pools: prev?.pools ?? [
+      { id: nextPoolId(), name: 'Pool A', numGroups: 2 },
+      { id: nextPoolId(), name: 'Pool B', numGroups: 2 }
+    ],
+    valueToPool: Object.fromEntries(values.map(v => [v, prev?.valueToPool?.[v] ?? null]))
+  };
+  showPartitionPanel();
+}
+
+function nextPoolId() { return `p${poolIdSeq++}`; }
+
+function showPartitionPanel() {
+  if (!partitionCfg || document.body.classList.contains('simple-mode')) {
+    document.getElementById('partition-panel').classList.add('hidden');
+    document.getElementById('global-group-settings').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('partition-panel').classList.remove('hidden');
+  document.getElementById('global-group-settings').classList.add('hidden');
+  document.getElementById('partition-col-name').textContent =
+    columnDefs.find(c => c.index === partitionCfg.colIndex)?.header || '';
+  renderPoolAssignments();
+  renderPoolSummaries();
+}
+
+function renderPoolAssignments() {
+  const values = Object.keys(partitionCfg.valueToPool);
+  const poolOpts = partitionCfg.pools.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+  document.getElementById('pool-assignments').innerHTML = values.map(v => {
+    const cur = partitionCfg.valueToPool[v] || '';
+    const count = students.filter(s => !s.disabled && s.values[partitionCfg.colIndex] === v).length;
+    return `
+      <div class="assign-row">
+        <span class="assign-val">${v || '(empty)'}</span>
+        <span class="assign-count">${count}</span>
+        <select class="assign-select" data-val="${encodeURIComponent(v)}">
+          <option value="">— Unassigned —</option>
+          ${poolOpts.replace(`value="${cur}"`, `value="${cur}" selected`)}
+        </select>
+      </div>`;
+  }).join('');
+}
+
+function renderPoolSummaries() {
+  const active = students.filter(s => !s.disabled);
+  const totalAssigned = partitionCfg.pools.reduce((s, pool) => {
+    const vals = Object.entries(partitionCfg.valueToPool).filter(([, id]) => id === pool.id).map(([v]) => v);
+    return s + active.filter(st => vals.includes(st.values[partitionCfg.colIndex])).length;
+  }, 0);
+  const totalGroups = partitionCfg.pools.reduce((s, p) => s + p.numGroups, 0);
+
+  document.getElementById('pool-summaries').innerHTML = partitionCfg.pools.map(pool => {
+    const vals = Object.entries(partitionCfg.valueToPool).filter(([, id]) => id === pool.id).map(([v]) => v);
+    const count = active.filter(s => vals.includes(s.values[partitionCfg.colIndex])).length;
+    const perGroup = pool.numGroups > 0 ? (count / pool.numGroups).toFixed(1) : '—';
+    return `
+      <div class="pool-row">
+        <input class="pool-name-inp" value="${pool.name}" data-poolid="${pool.id}" type="text">
+        <span class="pool-meta">${count} students → </span>
+        <input type="number" class="pool-n-inp" value="${pool.numGroups}" min="1" data-poolid="${pool.id}">
+        <span class="pool-meta">groups (~${perGroup} each)</span>
+        <button class="del-pool-btn icon-btn" data-poolid="${pool.id}" title="Remove pool">✕</button>
+      </div>`;
+  }).join('') + (active.length - totalAssigned > 0
+    ? `<p class="unassigned-note">${active.length - totalAssigned} unassigned students will be grouped separately.</p>` : '');
+
+  document.getElementById('partition-stats').textContent =
+    `${totalAssigned} assigned · ${totalGroups} groups total`;
+}
+
+// ── Roster ────────────────────────────────────────────────────────────────
+function renderRoster() {
+  const card = document.getElementById('card-roster');
+  if (!students.length) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+
+  const cols = columnDefs.filter(c => c.type !== 'ignore');
+  const thead = document.getElementById('roster-thead');
+  const tbody = document.getElementById('roster-tbody');
+
+  thead.innerHTML = `<tr>${cols.map(c => `<th>${c.header}</th>`).join('')}<th></th></tr>`;
+
+  const disabled  = students.filter(s => s.disabled).length;
+  document.getElementById('roster-summary').textContent =
+    `${students.length} total · ${students.filter(s=>!s.disabled).length} active${disabled ? ` · ${disabled} disabled` : ''}`;
+
+  tbody.innerHTML = students.map((s, i) => {
+    const editing = editingStudentIdxs.has(i);
+    const cells = cols.map(c => {
+      const val = (s.values[c.index] || '').replace(/"/g, '&quot;');
+      return editing
+        ? `<td><input class="roster-inp" value="${val}" data-si="${i}" data-col="${c.index}"></td>`
+        : `<td>${s.values[c.index] || '—'}</td>`;
+    }).join('');
+
+    return `<tr class="roster-row${s.disabled ? ' roster-disabled' : ''}" draggable="true" data-name="${s.displayName}">
+      ${cells}
+      <td class="roster-actions">
+        ${editing
+          ? `<button class="icon-btn roster-save" data-si="${i}" title="Save">✓</button>
+             <button class="icon-btn roster-cancel" data-si="${i}" title="Cancel">✕</button>`
+          : `<button class="icon-btn roster-edit" data-si="${i}" title="Edit">✎</button>
+             <button class="icon-btn roster-toggle-disable" data-si="${i}" title="${s.disabled ? 'Enable' : 'Disable'}">${s.disabled ? '⊕' : '⊖'}</button>
+             <button class="icon-btn roster-del" data-si="${i}" title="Remove">🗑</button>`}
+      </td>
+    </tr>`;
+  }).join('')
+  + (isAddingToRoster ? `<tr class="roster-row roster-add-row">
+      ${cols.map(c => `<td><input class="roster-inp roster-new-inp" data-col="${c.index}" placeholder="${c.header}…"></td>`).join('')}
+      <td class="roster-actions">
+        <button class="icon-btn roster-add-save" title="Add person">✓</button>
+        <button class="icon-btn roster-add-cancel" title="Cancel">✕</button>
+      </td>
+    </tr>` : '');
+}
+
+// ── Manual Entry ──────────────────────────────────────────────────────────
+const MBA_DEFAULTS = ['Name', 'Gender', 'Nationality', 'Date of Birth', 'Student Type'];
+
+function renderColChips() {
+  document.getElementById('col-chips').innerHTML = manualHeaders.map((h, i) => `
+    <span class="chip">${h}
+      <button class="chip-del" data-colidx="${i}" title="Remove column">×</button>
+    </span>`).join('');
+}
+
+function renderManualForm() {
+  document.getElementById('manual-form').innerHTML = manualHeaders.map((h, i) => `
+    <div class="form-group">
+      <label>${h}</label>
+      <input type="text" class="manual-inp" data-col="${i}" placeholder="${h}…">
+    </div>`).join('');
+  document.querySelector('.manual-inp')?.focus();
+}
+
+function renderManualTable() {
+  const wrap = document.getElementById('manual-list-wrap');
+  if (!manualRows.length) { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+  document.getElementById('manual-count').textContent = `${manualRows.length} people added`;
+  document.getElementById('manual-thead').innerHTML =
+    `<tr>${manualHeaders.map(h => `<th>${h}</th>`).join('')}<th></th></tr>`;
+  document.getElementById('manual-tbody').innerHTML = manualRows.map((row, i) => `
+    <tr>
+      ${row.map(v => `<td>${v || '—'}</td>`).join('')}
+      <td><button class="del-row-btn icon-btn" data-rowidx="${i}" title="Remove">✕</button></td>
+    </tr>`).join('');
+}
+
+function addManualPerson() {
+  const inputs = [...document.querySelectorAll('.manual-inp')];
+  const row = inputs.map(inp => inp.value.trim());
+  if (!row[0]) { alert('The first column (name) is required.'); return; }
+  manualRows.push(row);
+  inputs.forEach(inp => inp.value = '');
+  inputs[0]?.focus();
+  renderManualTable();
+}
+
+// ── Locks & Avoid-pairs UI ────────────────────────────────────────────────
+function renderLocksPanel() {
+  const panel = document.getElementById('locks-list');
+  const active = students.filter(s => !s.disabled);
+  if (!active.length) { panel.innerHTML = '<p class="hint">Generate groups first to enable locking.</p>'; return; }
+
+  panel.innerHTML = active.map(s => {
+    const locked = locks[s.displayName] ?? '';
+    const opts = groups.length
+      ? groups.map((_, i) => `<option value="${i}"${String(locked) === String(i) ? ' selected' : ''}>${groupLabels[i] || `Group ${i+1}`}</option>`).join('')
+      : '';
+    return `
+      <div class="lock-row">
+        <span class="lock-name">${s.displayName}</span>
+        <select class="lock-select" data-name="${encodeURIComponent(s.displayName)}">
+          <option value="">Free</option>
+          ${opts}
+        </select>
+      </div>`;
+  }).join('');
+}
+
+function renderAvoidPanel() {
+  const list = document.getElementById('avoid-list');
+  list.innerHTML = avoidPairs.map(([a, b], i) => `
+    <div class="avoid-row" draggable="true" data-pairidx="${i}">
+      <span class="avoid-drag-handle">⠿</span>
+      <span>${a} ↔ ${b}</span>
+      <button class="del-avoid-btn icon-btn" data-pairidx="${i}" title="Remove">✕</button>
+    </div>`).join('') || '<p class="hint">No rules yet. Drag a name from the roster to the inputs below.</p>';
+}
+
+function refreshAvoidDatalist() {
+  document.getElementById('student-names-list').innerHTML =
+    students.filter(s => !s.disabled).map(s => `<option value="${s.displayName}">`).join('');
+}
+
+// ── Group Generation ──────────────────────────────────────────────────────
+const WEIGHT_MAP = { low: 1, medium: 3, high: 10 };
+
+function columnScore(arrangement, col) {
+  const { type, index } = col;
+  if (type === 'gender') {
+    const all = arrangement.flat().map(s => s.values[index].toLowerCase());
+    const globalM = all.filter(v => /^m/.test(v)).length / (all.length || 1);
+    return arrangement.reduce((sum, g) => {
+      const r = g.filter(s => /^m/i.test(s.values[index])).length / (g.length || 1);
+      return sum + Math.abs(r - globalM);
+    }, 0);
+  }
+  if (type === 'numeric' || type === 'date') {
+    const means = arrangement.map(g => {
+      const nums = g.map(s => toNumeric(s.values[index], type));
+      return nums.reduce((a, b) => a + b, 0) / (nums.length || 1);
+    });
+    return stdDev(means);
+  }
+  if (type === 'categorical') {
+    return -arrangement.reduce((s, g) => s + new Set(g.map(s => s.values[index])).size, 0);
+  }
+  return 0;
+}
+
+function scoreArrangement(arrangement) {
+  return columnDefs
+    .filter(c => c.useForBalancing)
+    .reduce((t, col) => t + columnScore(arrangement, col) * (WEIGHT_MAP[col.weight] || 3), 0);
+}
+
+function avoidPenalty(arrangement) {
+  return avoidPairs.reduce((p, [a, b]) =>
+    arrangement.some(g => { const n = g.map(s => s.displayName); return n.includes(a) && n.includes(b); })
+      ? p + 1000 : p, 0);
+}
+
+function runBalancing(subset, numGroups) {
+  if (!subset.length || numGroups < 1) return [];
+  const n = Math.min(numGroups, subset.length);
+  const base = Math.floor(subset.length / n);
+  const extras = subset.length % n;
+  const sizes = Array.from({ length: n }, (_, i) => base + (i < extras ? 1 : 0));
+
+  const hasBalance = columnDefs.some(c => c.useForBalancing);
+  const hasAvoid   = avoidPairs.length > 0;
+  const ATTEMPTS   = (hasBalance || hasAvoid) ? 1000 : 1;
+  let best = null, bestScore = Infinity;
+
+  for (let i = 0; i < ATTEMPTS; i++) {
+    const shuffled = shuffle(subset);
+    let cursor = 0;
+    const arr = sizes.map(s => { const g = shuffled.slice(cursor, cursor + s); cursor += s; return g; });
+    const score = (hasBalance ? scoreArrangement(arr) : 0) + avoidPenalty(arr);
+    if (score < bestScore) { bestScore = score; best = arr; }
+  }
+  return best;
+}
+
+function getNumGroups() {
+  const mode = document.querySelector('input[name="groupMode"]:checked').value;
+  if (mode === 'count') {
+    const n = parseInt(document.getElementById('numGroups').value, 10);
+    if (!n || n < 2 || n > students.filter(s=>!s.disabled).length) { alert('Invalid group count.'); return null; }
+    return n;
+  }
+  const size = parseInt(document.getElementById('groupSize').value, 10);
+  if (!size || size < 1) { alert('Invalid group size.'); return null; }
+  return Math.max(2, Math.ceil(students.filter(s=>!s.disabled).length / size));
+}
+
+function applyLocks(numGroups) {
+  const locked = new Map(Array.from({ length: numGroups }, (_, i) => [i, []]));
+  const free = [];
+  students.filter(s => !s.disabled).forEach(s => {
+    const gi = locks[s.displayName];
+    if (gi !== undefined && gi !== '' && +gi >= 0 && +gi < numGroups) {
+      locked.get(+gi).push(s);
+    } else {
+      free.push(s);
+    }
+  });
+  return { locked, free };
+}
+
+function generateGroups() {
+  if (!students.filter(s => !s.disabled).length) { alert('No active students to group.'); return false; }
+  return partitionCfg ? generatePartitioned() : generateBalanced();
+}
+
+function generateBalanced() {
+  const numGroups = getNumGroups();
+  if (!numGroups) return false;
+
+  const { locked, free } = applyLocks(numGroups);
+  const freeGroups = runBalancing(free, numGroups);
+
+  groups = Array.from({ length: numGroups }, (_, i) => [
+    ...locked.get(i),
+    ...(freeGroups[i] || [])
+  ]);
+  const prevLabels = [...groupLabels];
+  groupLabels = Array.from({ length: numGroups }, (_, i) => prevLabels[i] || `Group ${i + 1}`);
+  return true;
+}
+
+function generatePartitioned() {
+  groups = []; groupLabels = [];
+
+  for (const pool of partitionCfg.pools) {
+    const poolValues = Object.entries(partitionCfg.valueToPool)
+      .filter(([, id]) => id === pool.id).map(([v]) => v);
+    const poolStudents = students.filter(s => !s.disabled && poolValues.includes(s.values[partitionCfg.colIndex]));
+    if (!poolStudents.length) continue;
+
+    const n = Math.max(1, Math.min(pool.numGroups, poolStudents.length));
+    runBalancing(poolStudents, n).forEach((g, i) => {
+      groups.push(g);
+      groupLabels.push(`${pool.name} · ${i + 1}`);
+    });
+  }
+
+  const assigned = new Set(
+    Object.entries(partitionCfg.valueToPool).filter(([, id]) => id).map(([v]) => v)
+  );
+  const unassigned = students.filter(s => !s.disabled && !assigned.has(s.values[partitionCfg.colIndex]));
+  if (unassigned.length) {
+    const avgSize = groups.length ? students.filter(s=>!s.disabled).length / groups.length : 4;
+    const n = Math.max(1, Math.round(unassigned.length / avgSize));
+    runBalancing(unassigned, n).forEach((g, i) => {
+      groups.push(g);
+      groupLabels.push(`Other · ${i + 1}`);
+    });
+  }
+  return groups.length > 0;
+}
+
+// ── Balance Quality Score ─────────────────────────────────────────────────
+function qualityScore() {
+  if (!groups.length || !columnDefs.some(c => c.useForBalancing)) return null;
+  const actual = scoreArrangement(groups);
+  let worst = actual;
+  const active = students.filter(s => !s.disabled);
+  for (let i = 0; i < 50; i++) {
+    const shuffled = shuffle(active);
+    const n = groups.length;
+    const base = Math.floor(active.length / n);
+    let cursor = 0;
+    const arr = Array.from({ length: n }, (_, j) => {
+      const size = base + (j < active.length % n ? 1 : 0);
+      const g = shuffled.slice(cursor, cursor + size); cursor += size; return g;
+    });
+    const s = scoreArrangement(arr);
+    if (s > worst) worst = s;
+  }
+  if (worst === 0) return 100;
+  return Math.round(Math.max(0, (1 - actual / worst) * 100));
+}
+
+// ── Results Display ───────────────────────────────────────────────────────
+function buildGroupStatsLine(group) {
+  return columnDefs.filter(c => c.useForBalancing).map(col => {
+    const { type, index, header } = col;
+    if (type === 'gender') {
+      const counts = {};
+      group.forEach(s => { const v = s.values[index] || '?'; counts[v] = (counts[v] || 0) + 1; });
+      return Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(' / ');
+    }
+    if (type === 'categorical') return `${new Set(group.map(s => s.values[index])).size} ${header}`;
+    if (type === 'numeric') {
+      const avg = group.reduce((s, m) => s + (parseFloat(m.values[index]) || 0), 0) / group.length;
+      return `${header} avg ${avg.toFixed(1)}`;
+    }
+    if (type === 'date') {
+      const ages = group.map(m => dateToAge(m.values[index])).filter(a => a !== null);
+      if (ages.length) return `Avg age ${(ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(1)}`;
+    }
+    return null;
+  }).filter(Boolean).join('  ·  ');
+}
+
+function buildGroupCardHTML(group, gi) {
+  const statsLine = buildGroupStatsLine(group);
+  const detailCols = columnDefs.filter(c => c.type !== 'name' && c.type !== 'ignore');
+  const members = group.map(s => {
+    const detail = detailCols.map(c => s.values[c.index]).filter(Boolean).join(' · ');
+    const isLocked = locks[s.displayName] !== undefined && locks[s.displayName] !== '';
+    return `<li class="member-item" draggable="true" data-name="${s.displayName}" data-gi="${gi}">
+      <span class="member-name">${s.displayName}${isLocked ? ' <span class="lock-icon" title="Locked">🔒</span>' : ''}</span>
+      ${detail ? `<span class="member-detail">${detail}</span>` : ''}
+    </li>`;
+  }).join('');
+
+  return `
+    <div class="group-head">
+      <h3 contenteditable="true" spellcheck="false" class="group-label" data-gi="${gi}">${groupLabels[gi]}</h3>
+      <span class="group-count">${group.length} members</span>
+    </div>
+    ${statsLine ? `<div class="group-stats-line">${statsLine}</div>` : ''}
+    <ul class="member-list" data-gi="${gi}">${members}</ul>
+    <button class="copy-btn" data-gi="${gi}">Copy Names</button>
+  `;
+}
+
+function refreshGroupCard(gi) {
+  const container = document.getElementById('groupsContainer');
+  const old = container.querySelector(`.group-card[data-gi="${gi}"]`);
+  if (!old) return;
+  const card = document.createElement('div');
+  card.className = 'group-card';
+  card.dataset.gi = gi;
+  card.innerHTML = buildGroupCardHTML(groups[gi], gi);
+  container.replaceChild(card, old);
+  // Update count on the adjacent group-count span
+  card.querySelector('.group-count').textContent = `${groups[gi].length} members`;
+}
+
+function displayResults() {
+  const score = qualityScore();
+  const balancedCols = columnDefs.filter(c => c.useForBalancing);
+
+  document.getElementById('overallStats').innerHTML = [
+    { label: 'Active students', value: students.filter(s=>!s.disabled).length },
+    { label: 'Groups',   value: groups.length },
+    { label: 'Balanced', value: `${balancedCols.length} col${balancedCols.length !== 1 ? 's' : ''}` },
+    ...(score !== null ? [{ label: 'Balance score', value: `${score}%` }] : [])
+  ].map(s => `
+    <div class="stat-chip">
+      <span class="stat-val">${s.value}</span>
+      <span class="stat-lbl">${s.label}</span>
+    </div>`).join('');
+
+  const container = document.getElementById('groupsContainer');
+  container.innerHTML = '';
+
+  groups.forEach((group, gi) => {
+    const card = document.createElement('div');
+    card.className = 'group-card';
+    card.dataset.gi = gi;
+    card.innerHTML = buildGroupCardHTML(group, gi);
+    container.appendChild(card);
+  });
+
+  renderLocksPanel();
+}
+
+// ── Session History ───────────────────────────────────────────────────────
+function pushToHistory() {
+  if (!groups.length) return;
+  sessionHistory.push({
+    date: new Date().toISOString(),
+    label: `Session ${sessionHistory.length + 1}`,
+    groups: groups.map(g => g.map(s => s.displayName)),
+    groupLabels: [...groupLabels]
+  });
+  renderHistory();
+  document.getElementById('section-history').classList.remove('hidden');
+}
+
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  if (!sessionHistory.length) {
+    container.innerHTML = '<p class="hint">No sessions recorded yet.</p>';
+    return;
+  }
+  container.innerHTML = [...sessionHistory].reverse().map((session, ri) => {
+    const i = sessionHistory.length - 1 - ri;
+    const date = new Date(session.date).toLocaleString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    const total = session.groups.reduce((s, g) => s + g.length, 0);
+    return `
+      <div class="history-item">
+        <div class="history-head">
+          <input class="history-label-inp" value="${session.label}" data-hi="${i}" type="text">
+          <span class="history-meta">${date} · ${total} students · ${session.groups.length} groups</span>
+          <button class="del-history-btn icon-btn" data-hi="${i}">✕</button>
+        </div>
+        <div class="history-groups">
+          ${session.groups.map((g, gi) => `
+            <div class="history-group">
+              <strong>${session.groupLabels[gi] || `Group ${gi+1}`}</strong>
+              <span>${g.join(', ')}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Session Save / Load ───────────────────────────────────────────────────
+function getCurrentSnapshot() {
+  const name = document.getElementById('cohort-name').value.trim() || 'cohort';
+  const mode = document.querySelector('input[name="groupMode"]:checked')?.value || 'count';
+  return {
+    version: '1.4',
+    savedAt: new Date().toISOString(),
+    cohortName: name,
+    columnDefs, rawRows, students, partitionCfg, locks, avoidPairs,
+    groupSettings: {
+      mode,
+      numGroups: +document.getElementById('numGroups').value,
+      groupSize: +document.getElementById('groupSize').value
+    },
+    currentGroups: groups.map(g => g.map(s => s.displayName)),
+    groupLabels, sessionHistory
+  };
+}
+
+function saveSession() {
+  const snapshot = getCurrentSnapshot();
+  const slug = snapshot.cohortName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(JSON.stringify(snapshot, null, 2), `${slug}_${date}.json`, 'application/json');
+}
+
+function restoreSessionData(data) {
+  if (!data.version || !data.students) throw new Error('Invalid session file.');
+
+  document.getElementById('cohort-name').value = data.cohortName || '';
+  columnDefs     = data.columnDefs || [];
+  rawRows        = data.rawRows || [];
+  students       = (data.students || []).map(s => ({ ...s, disabled: s.disabled ?? false }));
+  partitionCfg   = data.partitionCfg || null;
+  locks          = data.locks || {};
+  avoidPairs     = data.avoidPairs || [];
+  sessionHistory = data.sessionHistory || [];
+  editingStudentIdxs.clear();
+
+  if (data.groupSettings) {
+    const { mode, numGroups, groupSize } = data.groupSettings;
+    const radio = document.querySelector(`input[name="groupMode"][value="${mode}"]`);
+    if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+    document.getElementById('numGroups').value = numGroups || 4;
+    document.getElementById('groupSize').value = groupSize || 5;
+  }
+
+  const studentMap = Object.fromEntries(students.map(s => [s.displayName, s]));
+  groups      = (data.currentGroups || []).map(g => g.map(n => studentMap[n]).filter(Boolean));
+  groupLabels = data.groupLabels || [];
+
+  renderColumnCards();
+  renderRoster();
+  renderAvoidPanel();
+  refreshAvoidDatalist();
+  renderLocksPanel();
+  renderHistory();
+
+  const cols = columnDefs.filter(c => c.type !== 'ignore').length;
+  document.getElementById('parseInfo').textContent =
+    `Loaded: ${students.length} students across ${cols} columns.`;
+  document.getElementById('parseInfo').classList.remove('hidden');
+  document.getElementById('card-roster').classList.remove('hidden');
+  document.getElementById('card-config').classList.remove('hidden');
+
+  partitionCfg ? showPartitionPanel() : (() => {
+    document.getElementById('partition-panel').classList.add('hidden');
+    document.getElementById('global-group-settings').classList.remove('hidden');
+  })();
+
+  if (groups.length) {
+    displayResults();
+    document.getElementById('section-results').classList.remove('hidden');
+  }
+  document.getElementById('section-history').classList.toggle('hidden', !sessionHistory.length);
+}
+
+function loadSession(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try { restoreSessionData(JSON.parse(e.target.result)); }
+    catch (err) { alert('Could not load session: ' + err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ── Download Applet ───────────────────────────────────────────────────────
+async function downloadApplet() {
+  const btn = document.getElementById('downloadAppletBtn');
+  const origText = btn.textContent;
+  btn.textContent = 'Building…';
+  btn.disabled = true;
+
+  try {
+    const [cssResp, jsResp] = await Promise.all([fetch('styles.css'), fetch('app.js')]);
+    if (!cssResp.ok || !jsResp.ok) throw new Error('Could not fetch source files.');
+    const [cssText, jsText] = await Promise.all([cssResp.text(), jsResp.text()]);
+
+    const snapshot = getCurrentSnapshot();
+    const cohortName = snapshot.cohortName || 'cohort';
+    const bodyHTML = document.querySelector('.container').outerHTML;
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Generator — ${cohortName}</title>
+  <style>
+${cssText}
+  </style>
+</head>
+<body class="simple-mode">
+${bodyHTML}
+<script>
+${jsText}
+try { restoreSessionData(${JSON.stringify(snapshot)}); } catch(e) { console.error('Applet restore failed:', e); }
+<\/script>
+</body>
+</html>`;
+
+    const slug = cohortName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    downloadFile(html, `${slug}_applet.html`, 'text/html;charset=utf-8;');
+  } catch (err) {
+    alert('Could not build applet: ' + err.message + '\n\nThis feature requires the app to be served over HTTP.\nTip: run "npx serve ." in this folder and open via http://localhost:3000');
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
+// ── Exports ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  const cols = columnDefs.filter(c => c.type !== 'ignore');
+  const header = ['Group', ...cols.map(c => c.header)];
+  const rows = groups.flatMap((g, gi) =>
+    g.map(s => [groupLabels[gi], ...cols.map(c => s.values[c.index] || '')])
+  );
+  const csv = [header, ...rows].map(r =>
+    r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+  downloadFile(csv, 'groups.csv', 'text/csv;charset=utf-8;');
+}
+
+function exportTXT() {
+  const detailCols = columnDefs.filter(c => c.type !== 'name' && c.type !== 'ignore');
+  const lines = ['GROUP GENERATOR — RESULTS', '═'.repeat(40), ''];
+  groups.forEach((group, gi) => {
+    lines.push(`${groupLabels[gi]}  (${group.length} members)`);
+    lines.push('─'.repeat(30));
+    group.forEach(s => {
+      const d = detailCols.map(c => s.values[c.index]).filter(Boolean).join(', ');
+      lines.push(d ? `${s.displayName}  —  ${d}` : s.displayName);
+    });
+    lines.push('');
+  });
+  downloadFile(lines.join('\n'), 'groups.txt', 'text/plain;charset=utf-8;');
+}
+
+function copyAll() {
+  const text = groups.map((g, i) =>
+    `${groupLabels[i]}:\n${g.map(s => s.displayName).join('\n')}`
+  ).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => flash(document.getElementById('copyAllBtn'), 'Copied!'));
+}
+
+// ── Events: Tab switch ────────────────────────────────────────────────────
+document.getElementById('tab-paste').addEventListener('click', () => {
+  isManualMode = false;
+  document.getElementById('tab-paste').classList.add('active');
+  document.getElementById('tab-manual').classList.remove('active');
+  document.getElementById('panel-paste').classList.remove('hidden');
+  document.getElementById('panel-manual').classList.add('hidden');
+});
+
+document.getElementById('tab-manual').addEventListener('click', () => {
+  isManualMode = true;
+  document.getElementById('tab-manual').classList.add('active');
+  document.getElementById('tab-paste').classList.remove('active');
+  document.getElementById('panel-manual').classList.remove('hidden');
+  document.getElementById('panel-paste').classList.add('hidden');
+  renderColChips(); renderManualForm(); renderManualTable();
+});
+
+// ── Events: Manual entry ──────────────────────────────────────────────────
+document.getElementById('col-chips').addEventListener('click', e => {
+  if (e.target.matches('.chip-del')) {
+    const i = +e.target.dataset.colidx;
+    manualHeaders.splice(i, 1);
+    manualRows = manualRows.map(row => { row.splice(i, 1); return row; });
+    renderColChips(); renderManualForm(); renderManualTable();
+  }
+});
+
+document.getElementById('add-col-btn').addEventListener('click', () => {
+  const inp = document.getElementById('new-col-inp');
+  if (!inp.value.trim()) return;
+  manualHeaders.push(inp.value.trim());
+  manualRows = manualRows.map(row => [...row, '']);
+  inp.value = '';
+  renderColChips(); renderManualForm(); renderManualTable();
+});
+
+document.getElementById('new-col-inp').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('add-col-btn').click();
+});
+
+document.getElementById('mba-preset-btn').addEventListener('click', () => {
+  manualHeaders = [...MBA_DEFAULTS];
+  manualRows = manualRows.map(() => Array(manualHeaders.length).fill(''));
+  renderColChips(); renderManualForm(); renderManualTable();
+});
+
+document.getElementById('add-person-btn').addEventListener('click', addManualPerson);
+
+document.getElementById('manual-form').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const inputs = [...document.querySelectorAll('.manual-inp')];
+    const cur = inputs.indexOf(document.activeElement);
+    if (cur === inputs.length - 1) addManualPerson();
+    else inputs[cur + 1]?.focus();
+    e.preventDefault();
+  }
+});
+
+document.getElementById('manual-list-wrap').addEventListener('click', e => {
+  if (e.target.matches('.del-row-btn')) {
+    manualRows.splice(+e.target.dataset.rowidx, 1);
+    renderManualTable();
+  }
+});
+
+// ── Events: Parse ─────────────────────────────────────────────────────────
+document.getElementById('parseBtn').addEventListener('click', () => {
+  let raw;
+  if (isManualMode) {
+    if (!manualRows.length) return alert('Add at least one person first.');
+    raw = [manualHeaders, ...manualRows].map(r => r.join('\t')).join('\n');
+  } else {
+    raw = document.getElementById('studentData').value.trim();
+    if (!raw) return alert('Please paste some data first.');
+  }
+  if (!parseRawData(raw)) return alert('Could not parse data — check the format and try again.');
+
+  locks = {}; avoidPairs = []; editingStudentIdxs.clear();
+  renderColumnCards();
+  renderRoster();
+  renderAvoidPanel();
+  refreshAvoidDatalist();
+
+  document.getElementById('parseInfo').textContent =
+    `Found ${students.length} students across ${columnDefs.filter(c => c.type !== 'ignore').length} columns.`;
+  document.getElementById('parseInfo').classList.remove('hidden');
+  document.getElementById('card-roster').classList.remove('hidden');
+  document.getElementById('card-config').classList.remove('hidden');
+  document.getElementById('card-config').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('section-results').classList.add('hidden');
+
+  partitionCfg = null;
+  document.getElementById('partition-panel').classList.add('hidden');
+  document.getElementById('global-group-settings').classList.remove('hidden');
+});
+
+// ── Events: Roster ────────────────────────────────────────────────────────
+document.getElementById('roster-tbody').addEventListener('click', e => {
+  const si = +e.target.dataset.si;
+
+  if (e.target.matches('.roster-edit')) {
+    editingStudentIdxs.add(si);
+    renderRoster();
+    document.querySelector(`.roster-inp[data-si="${si}"]`)?.focus();
+  }
+  if (e.target.matches('.roster-save')) {
+    document.querySelectorAll(`.roster-inp[data-si="${si}"]`).forEach(inp => {
+      students[si].values[+inp.dataset.col] = inp.value.trim();
+    });
+    const nameCol = columnDefs.find(c => c.type === 'name');
+    if (nameCol) students[si].displayName = students[si].values[nameCol.index] || students[si].displayName;
+    editingStudentIdxs.delete(si);
+    renderRoster();
+    refreshAvoidDatalist();
+  }
+  if (e.target.matches('.roster-cancel')) {
+    editingStudentIdxs.delete(si);
+    renderRoster();
+  }
+  if (e.target.matches('.roster-toggle-disable')) {
+    students[si].disabled = !students[si].disabled;
+    renderRoster();
+    refreshAvoidDatalist();
+    renderLocksPanel();
+  }
+  if (e.target.matches('.roster-del')) {
+    if (!confirm(`Remove "${students[si].displayName}" from the roster?`)) return;
+    students.splice(si, 1);
+    editingStudentIdxs.clear();
+    renderRoster();
+    refreshAvoidDatalist();
+    renderLocksPanel();
+  }
+  if (e.target.matches('.roster-add-save')) {
+    const inputs = [...document.querySelectorAll('.roster-new-inp')];
+    const maxIdx = Math.max(...columnDefs.map(c => c.index));
+    const values = Array(maxIdx + 1).fill('');
+    inputs.forEach(inp => { values[+inp.dataset.col] = inp.value.trim(); });
+    const nameCol = columnDefs.find(c => c.type === 'name');
+    const name = nameCol ? values[nameCol.index] : '';
+    if (!name) { alert('Name is required.'); return; }
+    students.push({ displayName: name, values, disabled: false });
+    isAddingToRoster = false;
+    renderRoster();
+    refreshAvoidDatalist();
+    renderLocksPanel();
+  }
+  if (e.target.matches('.roster-add-cancel')) {
+    isAddingToRoster = false;
+    renderRoster();
+  }
+});
+
+// Roster drag → avoid-pair inputs
+document.getElementById('roster-tbody').addEventListener('dragstart', e => {
+  const row = e.target.closest('.roster-row');
+  if (!row) return;
+  dragPayload = { type: 'student', name: row.dataset.name };
+  e.dataTransfer.effectAllowed = 'copy';
+});
+
+// ── Events: Avoid drop targets ────────────────────────────────────────────
+['avoid-a', 'avoid-b'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-accept'); });
+  el.addEventListener('dragleave', () => el.classList.remove('drag-accept'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('drag-accept');
+    if (dragPayload?.name) el.value = dragPayload.name;
+    dragPayload = null;
+  });
+});
+
+// ── Events: Column cards ──────────────────────────────────────────────────
+document.getElementById('columnCards').addEventListener('change', e => {
+  const idx = +e.target.dataset.idx;
+  const col = columnDefs.find(c => c.index === idx);
+  if (!col || !e.target.matches('.type-select')) return;
+  col.type = e.target.value;
+  col.useForBalancing = col.type !== 'name' && col.type !== 'ignore';
+  col.useAsPartition  = false;
+  if (partitionCfg?.colIndex === idx) {
+    partitionCfg = null;
+    document.getElementById('partition-panel').classList.add('hidden');
+    document.getElementById('global-group-settings').classList.remove('hidden');
+  }
+  renderColumnCards();
+});
+
+document.getElementById('columnCards').addEventListener('click', e => {
+  if (e.target.matches('.use-opt')) {
+    const idx = +e.target.dataset.idx;
+    const mode = e.target.dataset.mode;
+    const col = columnDefs.find(c => c.index === idx);
+    if (mode === 'partition') {
+      columnDefs.forEach(c => c.useAsPartition = false);
+      col.useAsPartition = true;
+      col.useForBalancing = false;
+      initPartitionConfig(idx);
+    } else {
+      col.useAsPartition = false;
+      col.useForBalancing = mode === 'balance';
+      if (!columnDefs.some(c => c.useAsPartition)) {
+        partitionCfg = null;
+        document.getElementById('partition-panel').classList.add('hidden');
+        document.getElementById('global-group-settings').classList.remove('hidden');
+      }
+    }
+    renderColumnCards();
+    if (partitionCfg) showPartitionPanel();
+  }
+  if (e.target.matches('.weight-btn')) {
+    const idx = +e.target.dataset.idx;
+    const col = columnDefs.find(c => c.index === idx);
+    if (!col) return;
+    col.weight = e.target.dataset.weight;
+    document.querySelector(`.col-card[data-idx="${idx}"]`)
+      ?.querySelectorAll('.weight-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.weight === col.weight));
+  }
+});
+
+// ── Events: Partition panel ───────────────────────────────────────────────
+document.getElementById('pool-assignments').addEventListener('change', e => {
+  if (e.target.matches('.assign-select')) {
+    partitionCfg.valueToPool[decodeURIComponent(e.target.dataset.val)] = e.target.value || null;
+    renderPoolSummaries();
+  }
+});
+
+document.getElementById('pool-summaries').addEventListener('change', e => {
+  const pool = partitionCfg?.pools.find(p => p.id === e.target.dataset.poolid);
+  if (!pool) return;
+  if (e.target.matches('.pool-n-inp')) pool.numGroups = Math.max(1, parseInt(e.target.value, 10) || 1);
+  if (e.target.matches('.pool-name-inp')) { pool.name = e.target.value; renderPoolAssignments(); }
+  renderPoolSummaries();
+});
+
+document.getElementById('pool-summaries').addEventListener('click', e => {
+  if (e.target.matches('.del-pool-btn')) {
+    const id = e.target.dataset.poolid;
+    partitionCfg.pools = partitionCfg.pools.filter(p => p.id !== id);
+    Object.keys(partitionCfg.valueToPool).forEach(v => {
+      if (partitionCfg.valueToPool[v] === id) partitionCfg.valueToPool[v] = null;
+    });
+    renderPoolAssignments(); renderPoolSummaries();
+  }
+});
+
+document.getElementById('add-pool-btn').addEventListener('click', () => {
+  const letter = String.fromCharCode(64 + partitionCfg.pools.length + 1);
+  partitionCfg.pools.push({ id: nextPoolId(), name: `Pool ${letter}`, numGroups: 2 });
+  renderPoolAssignments(); renderPoolSummaries();
+});
+
+// ── Events: Group mode radio ──────────────────────────────────────────────
+document.querySelectorAll('input[name="groupMode"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('input-count').classList.toggle('hidden', r.value !== 'count');
+    document.getElementById('input-size').classList.toggle('hidden', r.value !== 'size');
+  });
+});
+
+// ── Events: Generate ──────────────────────────────────────────────────────
+document.getElementById('generateBtn').addEventListener('click', () => {
+  if (!generateGroups()) return;
+  pushToHistory();
+  displayResults();
+  const results = document.getElementById('section-results');
+  results.classList.remove('hidden');
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+document.getElementById('regenerateBtn').addEventListener('click', () => {
+  if (!generateGroups()) return;
+  pushToHistory();
+  displayResults();
+});
+
+// ── Events: Exports + session ─────────────────────────────────────────────
+document.getElementById('downloadCsvBtn').addEventListener('click', exportCSV);
+document.getElementById('downloadTxtBtn').addEventListener('click', exportTXT);
+document.getElementById('copyAllBtn').addEventListener('click', copyAll);
+document.getElementById('downloadAppletBtn').addEventListener('click', downloadApplet);
+document.getElementById('saveSessionBtn').addEventListener('click', saveSession);
+document.getElementById('loadSessionInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) { loadSession(file); e.target.value = ''; }
+});
+
+// ── Events: Mode toggle ───────────────────────────────────────────────────
+document.getElementById('modeToggleBtn').addEventListener('click', () => {
+  const isSimple = document.body.classList.toggle('simple-mode');
+  document.getElementById('modeToggleBtn').textContent = isSimple ? '⚙ Advanced' : '✕ Simple';
+  if (columnDefs.length) renderColumnCards();
+  if (isSimple && partitionCfg) showPartitionPanel();
+});
+
+// ── Events: Group name editing ────────────────────────────────────────────
+document.getElementById('groupsContainer').addEventListener('blur', e => {
+  if (e.target.matches('.group-label')) {
+    const gi = +e.target.dataset.gi;
+    groupLabels[gi] = e.target.textContent.trim() || `Group ${gi + 1}`;
+    if (!e.target.textContent.trim()) e.target.textContent = groupLabels[gi];
+  }
+}, true);
+
+document.getElementById('groupsContainer').addEventListener('keydown', e => {
+  if (e.target.matches('.group-label') && e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+});
+
+// ── Events: Group drag & drop ─────────────────────────────────────────────
+const groupsContainer = document.getElementById('groupsContainer');
+
+groupsContainer.addEventListener('dragstart', e => {
+  const item = e.target.closest('.member-item');
+  if (!item) return;
+  dragPayload = { type: 'member', name: item.dataset.name, gi: +item.dataset.gi };
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => item.classList.add('dragging'), 0);
+});
+
+groupsContainer.addEventListener('dragend', () => {
+  document.querySelectorAll('.member-item.dragging').forEach(el => el.classList.remove('dragging'));
+  document.querySelectorAll('.member-list.drag-over').forEach(el => el.classList.remove('drag-over'));
+});
+
+groupsContainer.addEventListener('dragover', e => {
+  const list = e.target.closest('.member-list');
+  if (list && dragPayload?.type === 'member') { e.preventDefault(); list.classList.add('drag-over'); }
+});
+
+groupsContainer.addEventListener('dragleave', e => {
+  const list = e.target.closest('.member-list');
+  if (list && !list.contains(e.relatedTarget)) list.classList.remove('drag-over');
+});
+
+groupsContainer.addEventListener('drop', e => {
+  const list = e.target.closest('.member-list');
+  if (!list || dragPayload?.type !== 'member') return;
+  e.preventDefault();
+  list.classList.remove('drag-over');
+
+  const toGi = +list.dataset.gi;
+  const { name, gi: fromGi } = dragPayload;
+  dragPayload = null;
+
+  if (toGi === fromGi) return;
+
+  const idx = groups[fromGi].findIndex(s => s.displayName === name);
+  if (idx === -1) return;
+
+  const [student] = groups[fromGi].splice(idx, 1);
+  groups[toGi].push(student);
+
+  refreshGroupCard(fromGi);
+  refreshGroupCard(toGi);
+  renderLocksPanel();
+});
+
+// ── Events: Copy group names ──────────────────────────────────────────────
+groupsContainer.addEventListener('click', e => {
+  if (e.target.matches('.copy-btn')) {
+    const gi = +e.target.dataset.gi;
+    navigator.clipboard.writeText(groups[gi].map(s => s.displayName).join('\n'))
+      .then(() => flash(e.target, 'Copied!'));
+  }
+});
+
+// ── Events: Locks ─────────────────────────────────────────────────────────
+document.getElementById('locks-list').addEventListener('change', e => {
+  if (e.target.matches('.lock-select')) {
+    const name = decodeURIComponent(e.target.dataset.name);
+    const val  = e.target.value;
+    if (val === '') delete locks[name]; else locks[name] = parseInt(val, 10);
+  }
+});
+
+// ── Events: Avoid pairs ───────────────────────────────────────────────────
+document.getElementById('add-avoid-btn').addEventListener('click', () => {
+  const a = document.getElementById('avoid-a').value.trim();
+  const b = document.getElementById('avoid-b').value.trim();
+  if (!a || !b) return alert('Enter both names.');
+  if (a === b) return alert('Names must be different.');
+  avoidPairs.push([a, b]);
+  document.getElementById('avoid-a').value = '';
+  document.getElementById('avoid-b').value = '';
+  renderAvoidPanel();
+});
+
+document.getElementById('avoid-list').addEventListener('click', e => {
+  if (e.target.matches('.del-avoid-btn')) {
+    avoidPairs.splice(+e.target.dataset.pairidx, 1);
+    renderAvoidPanel();
+  }
+});
+
+// ── Events: History ───────────────────────────────────────────────────────
+document.getElementById('history-list').addEventListener('input', e => {
+  if (e.target.matches('.history-label-inp')) {
+    sessionHistory[+e.target.dataset.hi].label = e.target.value;
+  }
+});
+
+document.getElementById('history-list').addEventListener('click', e => {
+  if (e.target.matches('.del-history-btn')) {
+    sessionHistory.splice(+e.target.dataset.hi, 1);
+    renderHistory();
+    document.getElementById('section-history').classList.toggle('hidden', !sessionHistory.length);
+  }
+});
+
+// ── Events: Roster add person ─────────────────────────────────────────────
+document.getElementById('roster-add-btn').addEventListener('click', () => {
+  isAddingToRoster = true;
+  document.getElementById('roster-body').classList.remove('hidden');
+  document.getElementById('roster-collapse-btn').textContent = '▼';
+  renderRoster();
+  document.querySelector('.roster-new-inp')?.focus();
+});
+
+// ── Events: Roster collapse toggle ───────────────────────────────────────
+document.getElementById('roster-collapse-btn').addEventListener('click', () => {
+  const body = document.getElementById('roster-body');
+  const btn  = document.getElementById('roster-collapse-btn');
+  const collapsed = body.classList.toggle('hidden');
+  btn.textContent = collapsed ? '▶' : '▼';
+});
+
+// ── Events: Clear ─────────────────────────────────────────────────────────
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('studentData').value = '';
+  document.getElementById('parseInfo').classList.add('hidden');
+  document.getElementById('card-roster').classList.add('hidden');
+  document.getElementById('card-config').classList.add('hidden');
+  document.getElementById('section-results').classList.add('hidden');
+  document.getElementById('section-history').classList.add('hidden');
+  rawRows = []; columnDefs = []; students = []; groups = []; groupLabels = [];
+  partitionCfg = null; locks = {}; avoidPairs = [];
+  sessionHistory = []; editingStudentIdxs.clear(); isAddingToRoster = false;
+  if (isManualMode) { manualRows = []; renderManualTable(); }
+});
+
+// ── Sample data ───────────────────────────────────────────────────────────
+document.getElementById('studentData').value = [
+  'Sort Name\tGender\tNationality\tDate of Birth\tStudent Type',
+  'Smith, John\tFemale\tUnited States\t12.3.1985\tCore',
+  'Johnson, Emily\tFemale\tCanada\t25.7.1990\tModule',
+  'Williams, Michael\tMale\tGermany\t8.11.1978\tModule',
+  'Jones, Sarah\tFemale\tAustralia\t19.2.2001\tCore',
+  'Brown, David\tMale\tJapan\t3.5.1988\tCore',
+  'Davis, Jessica\tFemale\tBrazil\t30.9.1995\tCore',
+  'Miller, Daniel\tMale\tUnited States\t14.12.1992\tModule',
+  'Wilson, Laura\tFemale\tFinland\t21.1.1983\tCore',
+  'Moore, James\tMale\tFinland\t7.6.1994\tCore',
+  'Taylor, Olivia\tFemale\tFinland\t16.4.1980\tModule',
+  'Laaksonen, Mikko\tMale\tFinland\t5.9.1986\tCore',
+  'Korhonen, Aino\tFemale\tFinland\t3.3.1992\tModule'
+].join('\n');
+
+</script>
+</body>
+</html>

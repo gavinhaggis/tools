@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #ffd966;
+      --green-light: #fcbd82;
+      --bg: #222034;
+      --card: #edeae8;
+      --border: #d4ceca;
+      --text: #222034;
+      --muted: #7a6f6a;
+      --accent: #ff6f00;
+      --accent-bg: #fff0e0;
+      --error-bg: #fde8e8;
+      --error: #c0392b;
+      --info-bg: #e0f0ff;
+      --info: #1a6fa8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Pangolin', cursive;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 32px 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    h1 {
+      font-family: 'Pangolin', cursive;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Main layout ─────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+    }
+
+    /* ── Panel (left controls) ───────────────── */
+    .panel {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border: 1px solid var(--border);
+      height: fit-content;
+    }
+
+    .panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--green);
+    }
+
+    .color-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .color-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .color-swatch-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .color-swatch-row input[type="text"] {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+    }
+
+    .swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-val {
+      font-size: 0.75rem;
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+    .checkbox-row input[type="checkbox"] {
+      accent-color: var(--green);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .file-btn {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .file-btn:hover { border-color: var(--green); color: var(--green); }
+    .file-btn input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+
+    .file-name {
+      font-size: 0.75rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Buttons ─────────────────────────────── */
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+    }
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--green);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--green-light); }
+
+    .btn-secondary {
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-accent:hover { background: #e06200; }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* ── Right side ──────────────────────────── */
+    .right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── QR Preview ─────────────────────────── */
+    .preview-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .qr-wrap {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    #barcode {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    #logo-overlay {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      object-fit: contain;
+      display: none;
+    }
+
+    /* ── Pixel Editor ────────────────────────── */
+    .pixel-editor-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pixel-editor-card.visible { display: flex; }
+
+    .pixel-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pixel-editor-title {
+      font-family: 'Pangolin', cursive;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--green);
+    }
+
+    .pixel-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    #pixel-canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      cursor: crosshair;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    /* ── Colour palette ──────────────────────── */
+    .palette-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .palette-chip {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .palette-chip:hover { transform: scale(1.15); }
+    .palette-chip.selected-fg { border-color: var(--text); box-shadow: 0 0 0 1px white inset; }
+    .palette-chip.selected-bg { border-color: var(--accent); box-shadow: 0 0 0 1px white inset; }
+
+    .palette-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* ── Pixel canvas module padding ─────────── */
+    .canvas-wrap {
+      display: flex;
+      justify-content: center;
+      overflow: auto;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .pixel-editor-controls {
+      
+      border-radius: 6px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Status ─────────────────────────────── */
+    #status {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      display: none;
+    }
+    #status.success { background: var(--accent-bg); color: var(--accent); display: block; }
+    #status.error   { background: var(--error-bg);  color: var(--error);  display: block; }
+    #status.info    { background: var(--info-bg);   color: var(--info);   display: block; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <h1 style="margin-bottom:0;">QR Code Generator</h1>
+    <a href="../index.html" aria-label="gav.fi tools" style="opacity:.4;transition:opacity .2s;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges" style="image-rendering:pixelated"><rect x="3" y="0" width="8" height="1" fill="#fbf236"/><rect x="0" y="1" width="4" height="1" fill="#fbf236"/><rect x="4" y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/><rect x="0" y="2" width="1" height="1" fill="#ffce10"/><rect x="1" y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/><rect x="0" y="3" width="2" height="1" fill="#ffce10"/><rect x="2" y="3" width="3" height="1" fill="#222034"/><rect x="5" y="3" width="1" height="1" fill="#ffce10"/><rect x="6" y="3" width="1" height="1" fill="#fbf236"/><rect x="7" y="3" width="2" height="1" fill="#222034"/><rect x="9" y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/><rect x="1" y="4" width="2" height="1" fill="#ffce10"/><rect x="3" y="4" width="3" height="1" fill="#222034"/><rect x="6" y="4" width="1" height="1" fill="#fbf236"/><rect x="7" y="4" width="2" height="1" fill="#222034"/><rect x="9" y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/><rect x="2" y="5" width="2" height="1" fill="#ffce10"/><rect x="4" y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/><rect x="3" y="6" width="2" height="1" fill="#ffce10"/><rect x="5" y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/><rect x="4" y="7" width="7" height="1" fill="#ffce10"/></svg></a>
+  </div>
+
+  <div class="layout">
+    <!-- ── LEFT PANEL ── -->
+    <div class="panel">
+
+      <div class="panel-section">
+        <div class="section-title">Content</div>
+        <label>URL or Text</label>
+        <input id="text" type="text" value="medievalsolutions.com" placeholder="Enter URL or text">
+        <label>Error Correction</label>
+        <select id="errorCorrection">
+          <option value="L">Low (7%)</option>
+          <option value="M">Medium (15%)</option>
+          <option value="Q">Quartile (25%)</option>
+          <option value="H" selected>High (30%)</option>
+        </select>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">Appearance</div>
+        <div class="color-row">
+          <div class="color-field">
+            <label>Foreground</label>
+            <div class="color-swatch-row">
+              <input id="fgColor" type="text" value="222034" maxlength="6">
+              <span class="swatch" id="fgSwatch" style="background:#222034"></span>
+            </div>
+          </div>
+          <div class="color-field">
+            <label>Background</label>
+            <div class="color-swatch-row">
+              <input id="bgColor" type="text" value="FFFFFF" maxlength="6">
+              <span class="swatch" id="bgSwatch" style="background:#FFFFFF"></span>
+            </div>
+          </div>
+        </div>
+        <div class="palette-hint">Click → foreground &nbsp;|&nbsp; Right-click → background</div>
+        <div class="palette-row" id="paletteRow">
+          <span class="palette-chip" style="background:#000000" data-hex="000000" title="#000000"></span>
+          <span class="palette-chip" style="background:#ffffff;border-color:#d4ceca" data-hex="ffffff" title="#ffffff"></span>
+          <span class="palette-chip" style="background:#37946e" data-hex="37946e" title="#37946e"></span>
+          <span class="palette-chip" style="background:#222034" data-hex="222034" title="#222034"></span>
+          <span class="palette-chip" style="background:#99e550" data-hex="99e550" title="#99e550"></span>
+          <span class="palette-chip" style="background:#f2efed" data-hex="f2efed" title="#f2efed"></span>
+          <span class="palette-chip" style="background:#ffd966" data-hex="ffd966" title="#ffd966"></span>
+          <span class="palette-chip" style="background:#e3ae59" data-hex="e3ae59" title="#e3ae59"></span>
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <label>Padding</label>
+            <span class="slider-val" id="paddingVal">7</span>
+          </div>
+          <input type="range" id="qrPadding" min="0" max="20" value="7">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">Logo (optional)</div>
+        <label class="file-btn">
+          📁 Choose Logo
+          <input id="logoUpload" type="file" accept="image/*">
+        </label>
+        <span class="file-name" id="fileName">No logo selected</span>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <label>Size</label>
+            <span class="slider-val" id="logoSizeVal">20%</span>
+          </div>
+          <input type="range" id="logoSize" min="5" max="60" value="20">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <label>Padding</label>
+            <span class="slider-val" id="logoPadVal">5px</span>
+          </div>
+          <input type="range" id="logoPadding" min="0" max="20" value="5">
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="squarePadding">
+          <label for="squarePadding">Square padding</label>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="panel-section">
+        <button class="btn btn-primary" id="generateBtn">Generate QR Code</button>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="downloadBtn">⬇ PNG</button>
+          <button class="btn btn-secondary" id="downloadSvgBtn">⬇ SVG</button>
+        </div>
+        <button class="btn btn-accent" id="pixelModeBtn">✏ Pixel Edit</button>
+      </div>
+
+      <div id="status"></div>
+    </div>
+
+    <!-- ── RIGHT SIDE ── -->
+    <div class="right">
+
+      <!-- QR Preview -->
+      <div class="preview-card">
+        <div class="qr-wrap" id="qr-container">
+          <img id="barcode" src="" alt="QR Code">
+          <img id="logo-overlay" alt="Logo">
+        </div>
+        <span class="pixel-hint">Preview (220×220)</span>
+      </div>
+
+      <!-- Pixel Art Editor -->
+      <div class="pixel-editor-card" id="pixelEditorCard">
+        <div class="pixel-editor-header">
+          <span class="pixel-editor-title">Pixel Art Editor</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-secondary" id="resetPixelsBtn" style="width:auto;padding:6px 12px;font-size:0.78rem;">↺ Reset</button>
+            <button class="btn btn-secondary" id="download1to1Btn" style="width:auto;padding:6px 12px;font-size:0.78rem;" title="1 pixel per module — ideal for external pixel art editors">⬇ 1:1 PNG</button>
+            <button class="btn btn-accent" id="downloadPixelBtn" style="width:auto;padding:6px 12px;font-size:0.78rem;">⬇ Download</button>
+          </div>
+        </div>
+        <span class="pixel-hint">Click pixels to toggle them on/off. Hold and drag to paint.</span>
+        <div class="pixel-editor-controls">
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <label style="color:var(--muted);font-size:0.8rem;">Border padding (modules)</label>
+              <span class="slider-val" id="pixelBorderVal">1</span>
+            </div>
+            <input type="range" id="pixelBorder" min="0" max="8" value="1">
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="pixel-canvas"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+  // ── State ────────────────────────────────────────────────────────
+  let customLogo = null;
+  let logoAspectRatio = 1;
+
+  // Pixel editor state
+  let pixelMatrix = [];   // 2D boolean array, true = dark
+  let moduleCount = 0;
+  let cellSize = 10;      // display px per QR module
+  let isPainting = false;
+  let paintValue = true;  // what value we're painting (set on mousedown)
+  let fgHex = '#222034';
+  let bgHex = '#ffffff';
+
+  // ── Element refs ─────────────────────────────────────────────────
+  const textEl        = document.getElementById('text');
+  const eccEl         = document.getElementById('errorCorrection');
+  const fgEl          = document.getElementById('fgColor');
+  const bgEl          = document.getElementById('bgColor');
+  const fgSwatch      = document.getElementById('fgSwatch');
+  const bgSwatch      = document.getElementById('bgSwatch');
+  const paddingEl     = document.getElementById('qrPadding');
+  const paddingVal    = document.getElementById('paddingVal');
+  const logoUpload    = document.getElementById('logoUpload');
+  const fileNameEl    = document.getElementById('fileName');
+  const logoSizeEl    = document.getElementById('logoSize');
+  const logoSizeVal   = document.getElementById('logoSizeVal');
+  const logoPadEl     = document.getElementById('logoPadding');
+  const logoPadVal    = document.getElementById('logoPadVal');
+  const squarePadEl   = document.getElementById('squarePadding');
+  const barcodeImg    = document.getElementById('barcode');
+  const logoOverlay   = document.getElementById('logo-overlay');
+  const pixelCanvas   = document.getElementById('pixel-canvas');
+  const pixelCard     = document.getElementById('pixelEditorCard');
+  const pixelBorderEl = document.getElementById('pixelBorder');
+  const pixelBorderValEl = document.getElementById('pixelBorderVal');
+  const statusEl      = document.getElementById('status');
+  const ctx           = pixelCanvas.getContext('2d');
+
+  // ── Helpers ──────────────────────────────────────────────────────
+  function showStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className = type;
+    clearTimeout(showStatus._t);
+    showStatus._t = setTimeout(() => { statusEl.className = ''; }, 5000);
+  }
+
+  function hexValid(h) { return /^[0-9A-Fa-f]{6}$/.test(h); }
+
+  function updateSwatches() {
+    if (hexValid(fgEl.value)) fgSwatch.style.background = '#' + fgEl.value;
+    if (hexValid(bgEl.value)) bgSwatch.style.background = '#' + bgEl.value;
+  }
+
+  // ── QR Generation (preview via API) ──────────────────────────────
+  function generateBarCode() {
+    const input  = textEl.value.trim() || 'example.com';
+    const fg     = fgEl.value.trim() || '000000';
+    const bg     = bgEl.value.trim() || 'FFFFFF';
+    const pad    = paddingEl.value;
+    const ecc    = eccEl.value;
+
+    if (!hexValid(fg) || !hexValid(bg)) {
+      showStatus('Please enter valid 6-character hex colors.', 'error');
+      return;
+    }
+
+    showStatus('Generating…', 'info');
+
+    const url = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(input)}&size=220x220&ecc=${ecc}&color=${fg}&bgcolor=${bg}&margin=${pad}`;
+    barcodeImg.onload  = () => { showStatus('QR code generated!', 'success'); updateLogoDisplay(); };
+    barcodeImg.onerror = () => showStatus('Failed to generate QR code.', 'error');
+    barcodeImg.src = url;
+  }
+
+  // ── Logo display ─────────────────────────────────────────────────
+  function updateLogoDisplay() {
+    if (!customLogo) { logoOverlay.style.display = 'none'; return; }
+
+    const qrSize    = 220;
+    const maxSize   = qrSize * (logoSizeEl.value / 100);
+    const pad       = parseInt(logoPadEl.value);
+    const isSquare  = squarePadEl.checked;
+    let w, h;
+
+    if (logoAspectRatio >= 1) { w = maxSize; h = maxSize / logoAspectRatio; }
+    else                      { h = maxSize; w = maxSize * logoAspectRatio; }
+
+    // The overlay img element represents the logo itself (no padding on the element).
+    // We use its CSS background/outline approach: just show logo + white bg via padding.
+    logoOverlay.style.width  = w + 'px';
+    logoOverlay.style.height = h + 'px';
+    logoOverlay.style.backgroundColor = 'white';
+    logoOverlay.style.boxSizing = 'content-box';
+
+    if (isSquare) {
+      logoOverlay.style.padding = pad + 'px';
+      logoOverlay.style.borderRadius = '0';
+    } else {
+      // Use same consistent radius: half-diagonal of logo + pad
+      const logoRadius = Math.sqrt((w / 2) ** 2 + (h / 2) ** 2);
+      const circleR = logoRadius + pad;
+      // Convert border-radius to show circle: set padding so total size = 2*circleR
+      const extraPad = circleR - Math.max(w, h) / 2;
+      logoOverlay.style.padding = Math.max(0, extraPad) + 'px';
+      logoOverlay.style.borderRadius = '50%';
+    }
+    logoOverlay.style.display = 'block';
+  }
+
+  // ── Download (normal) ─────────────────────────────────────────────
+  function downloadQR() {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 220;
+    const c = canvas.getContext('2d');
+
+    const tempImg = new Image();
+    tempImg.crossOrigin = 'Anonymous';
+    tempImg.onload = () => {
+      c.drawImage(tempImg, 0, 0, 220, 220);
+
+      if (customLogo) {
+        const li = new Image();
+        li.onload = () => {
+          const qrSize   = 220;
+          const maxSize  = qrSize * (logoSizeEl.value / 100);
+          const pad      = parseInt(logoPadEl.value);
+          const isSquare = squarePadEl.checked;
+          let w, h;
+          if (logoAspectRatio >= 1) { w = maxSize; h = maxSize / logoAspectRatio; }
+          else                      { h = maxSize; w = maxSize * logoAspectRatio; }
+
+          // Centre of the QR canvas
+          const cx = 220 / 2, cy = 220 / 2;
+          // Logo top-left when centred
+          const lx = cx - w / 2, ly = cy - h / 2;
+
+          c.fillStyle = '#FFFFFF';
+          if (isSquare) {
+            // White square background = logo size + uniform padding on all sides
+            c.fillRect(lx - pad, ly - pad, w + pad * 2, h + pad * 2);
+          } else {
+            // White circle background: radius covers the logo's half-diagonal + padding
+            // This is consistent regardless of logo aspect ratio
+            const logoRadius = Math.sqrt((w / 2) ** 2 + (h / 2) ** 2);
+            const circleR = logoRadius + pad;
+            c.beginPath();
+            c.arc(cx, cy, circleR, 0, Math.PI * 2);
+            c.fill();
+          }
+          // Draw logo centred, never clipped — padding is always visible around it
+          c.drawImage(li, lx, ly, w, h);
+          doDownload(canvas, 'qr');
+        };
+        li.src = customLogo;
+      } else {
+        doDownload(canvas, 'qr');
+      }
+    };
+    tempImg.onerror = () => showStatus('Error loading QR image.', 'error');
+    tempImg.src = barcodeImg.src;
+  }
+
+  function doDownload(canvas, prefix) {
+    const name = `${prefix}-${(textEl.value.trim()||'qr').replace(/[^a-z0-9]/gi,'_').substring(0,30)}.png`;
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.download = name;
+      a.href = URL.createObjectURL(blob);
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
+      showStatus(`Downloaded ${name}`, 'success');
+    }, 'image/png');
+  }
+
+  function downloadSVG() {
+    const input  = textEl.value.trim() || 'example.com';
+    const fg     = fgEl.value.trim() || '222034';
+    const bg     = bgEl.value.trim() || 'FFFFFF';
+    const pad    = parseInt(paddingEl.value);
+    const ecc    = eccEl.value;
+
+    if (!hexValid(fg) || !hexValid(bg)) {
+      showStatus('Please enter valid 6-character hex colors.', 'error');
+      return;
+    }
+
+    showStatus('Generating SVG…', 'info');
+
+    // Generate QR data
+    const qr = qrcode(0, ecc);
+    qr.addData(input);
+    qr.make();
+    const moduleCount = qr.getModuleCount();
+    const fgColor = '#' + fg;
+    const bgColor = '#' + bg;
+    const totalSize = moduleCount + pad * 2;
+    const moduleSize = 10; // SVG units per QR module
+    const svgSize = totalSize * moduleSize;
+
+    // Build SVG
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgSize} ${svgSize}" width="${svgSize}" height="${svgSize}">`;
+    
+    // Background
+    svg += `<rect width="${svgSize}" height="${svgSize}" fill="${bgColor}"/>`;
+    
+    // QR modules
+    for (let r = 0; r < moduleCount; r++) {
+      for (let c = 0; c < moduleCount; c++) {
+        if (qr.isDark(r, c)) {
+          const x = (c + pad) * moduleSize;
+          const y = (r + pad) * moduleSize;
+          svg += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${fgColor}"/>`;
+        }
+      }
+    }
+
+    // Logo overlay if present
+    if (customLogo) {
+      const qrSvgSize = svgSize / moduleSize; // in QR module units
+      const logoPercent = logoSizeEl.value / 100;
+      const logoPadPx = parseInt(logoPadEl.value);
+      const isSquare = squarePadEl.checked;
+      const maxLogoSize = qrSvgSize * logoPercent;
+      let logoWidth, logoHeight;
+
+      if (logoAspectRatio >= 1) {
+        logoWidth = maxLogoSize;
+        logoHeight = maxLogoSize / logoAspectRatio;
+      } else {
+        logoHeight = maxLogoSize;
+        logoWidth = maxLogoSize * logoAspectRatio;
+      }
+
+      const logoPadModules = logoPadPx / moduleSize;
+      const logoX = (qrSvgSize - logoWidth) / 2;
+      const logoY = (qrSvgSize - logoHeight) / 2;
+
+      // White background for logo (square or circle)
+      if (isSquare) {
+        svg += `<rect x="${logoX - logoPadModules}" y="${logoY - logoPadModules}" width="${logoWidth + logoPadModules * 2}" height="${logoHeight + logoPadModules * 2}" fill="white" rx="0"/>`;
+      } else {
+        const logoRadius = Math.sqrt((logoWidth / 2) ** 2 + (logoHeight / 2) ** 2);
+        const circleR = logoRadius + logoPadModules;
+        const cx = qrSvgSize / 2;
+        const cy = qrSvgSize / 2;
+        svg += `<circle cx="${cx}" cy="${cy}" r="${circleR}" fill="white"/>`;
+      }
+
+      // Logo image (embedded as base64)
+      svg += `<image href="${customLogo}" x="${logoX}" y="${logoY}" width="${logoWidth}" height="${logoHeight}" preserveAspectRatio="xMidYMid meet"/>`;
+    }
+
+    svg += '</svg>';
+
+    // Download SVG
+    const name = `qr-${(input.replace(/[^a-z0-9]/gi,'_').substring(0,30))}.svg`;
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.download = name;
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }, 100);
+    showStatus(`Downloaded ${name}`, 'success');
+  }
+
+  // ── Pixel Art Editor ─────────────────────────────────────────────
+  function openPixelEditor() {
+    const qrText  = textEl.value.trim() || 'example.com';
+    const ecc     = eccEl.value;
+
+    fgHex = '#' + (fgEl.value.trim() || '222034');
+    bgHex = '#' + (bgEl.value.trim() || 'ffffff');
+
+    // Generate QR data via qrcode-generator
+    const qr = qrcode(0, ecc);
+    qr.addData(qrText);
+    qr.make();
+    moduleCount = qr.getModuleCount();
+
+    // Build boolean matrix (data modules only, no border)
+    pixelMatrix = [];
+    for (let r = 0; r < moduleCount; r++) {
+      pixelMatrix[r] = [];
+      for (let c = 0; c < moduleCount; c++) {
+        pixelMatrix[r][c] = qr.isDark(r, c);
+      }
+    }
+
+    rebuildPixelCanvas();
+    pixelCard.classList.add('visible');
+    pixelCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showStatus('Pixel editor open — click to toggle modules!', 'info');
+  }
+
+  function getBorderModules() {
+    return parseInt(pixelBorderEl.value) || 0;
+  }
+
+  function rebuildPixelCanvas() {
+    if (!moduleCount) return;
+    const border = getBorderModules();
+    const totalModules = moduleCount + border * 2;
+    // Size canvas to fit nicely — max ~500px wide
+    const maxEditorSize = Math.min(560, window.innerWidth - 60);
+    cellSize = Math.max(4, Math.floor(maxEditorSize / totalModules));
+    const canvasSize = totalModules * cellSize;
+    pixelCanvas.width  = canvasSize;
+    pixelCanvas.height = canvasSize;
+    renderPixelCanvas();
+  }
+
+  function renderPixelCanvas() {
+    if (!moduleCount) return;
+    const border = getBorderModules();
+    const totalModules = moduleCount + border * 2;
+    ctx.imageSmoothingEnabled = false;
+    // Fill entire canvas with bg (covers border area)
+    ctx.fillStyle = bgHex;
+    ctx.fillRect(0, 0, pixelCanvas.width, pixelCanvas.height);
+    // Draw data modules offset by border
+    for (let r = 0; r < moduleCount; r++) {
+      for (let c = 0; c < moduleCount; c++) {
+        if (pixelMatrix[r][c]) {
+          ctx.fillStyle = fgHex;
+          ctx.fillRect((c + border) * cellSize, (r + border) * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+  }
+
+  function getCell(e) {
+    const rect = pixelCanvas.getBoundingClientRect();
+    const scaleX = pixelCanvas.width  / rect.width;
+    const scaleY = pixelCanvas.height / rect.height;
+    const px = (e.clientX - rect.left) * scaleX;
+    const py = (e.clientY - rect.top)  * scaleY;
+    const border = getBorderModules();
+    const c  = Math.floor(px / cellSize) - border;
+    const r  = Math.floor(py / cellSize) - border;
+    if (r >= 0 && r < moduleCount && c >= 0 && c < moduleCount) return { r, c };
+    return null;
+  }
+
+  function paintCell(r, c) {
+    pixelMatrix[r][c] = paintValue;
+    const border = getBorderModules();
+    ctx.fillStyle = paintValue ? fgHex : bgHex;
+    ctx.fillRect((c + border) * cellSize, (r + border) * cellSize, cellSize, cellSize);
+  }
+
+  pixelCanvas.addEventListener('mousedown', e => {
+    const cell = getCell(e);
+    if (!cell) return;
+    isPainting = true;
+    paintValue = !pixelMatrix[cell.r][cell.c]; // toggle from current
+    paintCell(cell.r, cell.c);
+  });
+
+  pixelCanvas.addEventListener('mousemove', e => {
+    if (!isPainting) return;
+    const cell = getCell(e);
+    if (cell) paintCell(cell.r, cell.c);
+  });
+
+  // Touch support
+  function touchPos(e) {
+    e.preventDefault();
+    const t = e.touches[0];
+    return { clientX: t.clientX, clientY: t.clientY };
+  }
+  pixelCanvas.addEventListener('touchstart', e => {
+    const cell = getCell(touchPos(e));
+    if (!cell) return;
+    isPainting = true;
+    paintValue = !pixelMatrix[cell.r][cell.c];
+    paintCell(cell.r, cell.c);
+  }, { passive: false });
+  pixelCanvas.addEventListener('touchmove', e => {
+    if (!isPainting) return;
+    const cell = getCell(touchPos(e));
+    if (cell) paintCell(cell.r, cell.c);
+  }, { passive: false });
+
+  window.addEventListener('mouseup',  () => { isPainting = false; });
+  window.addEventListener('touchend', () => { isPainting = false; });
+
+  function resetPixels() {
+    const qrText = textEl.value.trim() || 'example.com';
+    const ecc    = eccEl.value;
+    const qr     = qrcode(0, ecc);
+    qr.addData(qrText); qr.make();
+    for (let r = 0; r < moduleCount; r++)
+      for (let c = 0; c < moduleCount; c++)
+        pixelMatrix[r][c] = qr.isDark(r, c);
+    renderPixelCanvas();
+    showStatus('Canvas reset to original QR code.', 'info');
+  }
+
+  function downloadPixelArt() {
+    // Scale up for a crisp download (10× per module)
+    const scale  = 10;
+    const border = getBorderModules();
+    const total  = moduleCount + border * 2;
+    const out    = document.createElement('canvas');
+    out.width    = out.height = total * scale;
+    const oc     = out.getContext('2d');
+    oc.imageSmoothingEnabled = false;
+    // Fill background (covers border area)
+    oc.fillStyle = bgHex;
+    oc.fillRect(0, 0, out.width, out.height);
+    // Draw data modules offset by border
+    for (let r = 0; r < moduleCount; r++) {
+      for (let c = 0; c < moduleCount; c++) {
+        if (pixelMatrix[r][c]) {
+          oc.fillStyle = fgHex;
+          oc.fillRect((c + border) * scale, (r + border) * scale, scale, scale);
+        }
+      }
+    }
+    doDownload(out, 'qr-pixel');
+  }
+
+  function download1to1() {
+    // Exactly 1 pixel per module — perfect for importing into Aseprite, Photoshop, etc.
+    const border = getBorderModules();
+    const total  = moduleCount + border * 2;
+    const out    = document.createElement('canvas');
+    out.width    = out.height = total;          // 1px per module
+    const oc     = out.getContext('2d');
+    oc.imageSmoothingEnabled = false;
+    oc.fillStyle = bgHex;
+    oc.fillRect(0, 0, total, total);
+    for (let r = 0; r < moduleCount; r++) {
+      for (let c = 0; c < moduleCount; c++) {
+        if (pixelMatrix[r][c]) {
+          oc.fillStyle = fgHex;
+          oc.fillRect(c + border, r + border, 1, 1);
+        }
+      }
+    }
+    doDownload(out, 'qr-1to1');
+  }
+
+  // ── Colour palette ───────────────────────────────────────────────
+  function updatePaletteHighlight() {
+    const fg = fgEl.value.toLowerCase();
+    const bg = bgEl.value.toLowerCase();
+    document.querySelectorAll('.palette-chip').forEach(chip => {
+      const h = chip.dataset.hex.toLowerCase();
+      chip.classList.toggle('selected-fg', h === fg);
+      chip.classList.toggle('selected-bg', h === bg);
+    });
+  }
+
+  document.getElementById('paletteRow').addEventListener('click', e => {
+    const chip = e.target.closest('.palette-chip');
+    if (!chip) return;
+    fgEl.value = chip.dataset.hex;
+    updateSwatches();
+    updatePaletteHighlight();
+  });
+
+  document.getElementById('paletteRow').addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const chip = e.target.closest('.palette-chip');
+    if (!chip) return;
+    bgEl.value = chip.dataset.hex;
+    updateSwatches();
+    updatePaletteHighlight();
+  });
+
+  // ── Event listeners ──────────────────────────────────────────────
+  document.getElementById('generateBtn').addEventListener('click', generateBarCode);
+  document.getElementById('downloadBtn').addEventListener('click', downloadQR);
+  document.getElementById('downloadSvgBtn').addEventListener('click', downloadSVG);
+  document.getElementById('pixelModeBtn').addEventListener('click', openPixelEditor);
+  document.getElementById('resetPixelsBtn').addEventListener('click', resetPixels);
+  document.getElementById('download1to1Btn').addEventListener('click', download1to1);
+  document.getElementById('downloadPixelBtn').addEventListener('click', downloadPixelArt);
+
+  pixelBorderEl.addEventListener('input', () => {
+    pixelBorderValEl.textContent = pixelBorderEl.value;
+    rebuildPixelCanvas();
+  });
+
+  paddingEl.addEventListener('input', () => {
+    paddingVal.textContent = paddingEl.value;
+    if (barcodeImg.src) generateBarCode();
+  });
+
+  logoSizeEl.addEventListener('input', () => {
+    logoSizeVal.textContent = logoSizeEl.value + '%';
+    updateLogoDisplay();
+  });
+
+  logoPadEl.addEventListener('input', () => {
+    logoPadVal.textContent = logoPadEl.value + 'px';
+    updateLogoDisplay();
+  });
+
+  squarePadEl.addEventListener('change', updateLogoDisplay);
+
+  fgEl.addEventListener('input', () => { updateSwatches(); updatePaletteHighlight(); });
+  bgEl.addEventListener('input', () => { updateSwatches(); updatePaletteHighlight(); });
+
+  logoUpload.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    fileNameEl.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      customLogo = ev.target.result;
+      const img  = new Image();
+      img.onload = () => { logoAspectRatio = img.width / img.height; logoOverlay.src = customLogo; updateLogoDisplay(); };
+      img.src    = customLogo;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Init ─────────────────────────────────────────────────────────
+  updatePaletteHighlight();
+  generateBarCode();
+</script>
+</body>
+</html>

@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Asset Generator 1.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ── Reset & Base ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f3efed;
+            --panel: #edeae8;
+            --panel-white: #ffffff;
+            --border: #d4ceca;
+            --btn: #efa551;
+            --btn-hover: #d48a3a;
+            --accent: #ffd966;
+            --text: #222034;
+            --muted: #7a6f6a;
+            --preview-bg: #222034;
+            --radius-panel: 12px;
+            --radius-input: 6px;
+            --radius-btn: 6px;
+            --shadow: 0 2px 8px rgba(34, 32, 52, 0.08);
+            --shadow-md: 0 4px 16px rgba(34, 32, 52, 0.12);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0 0 48px;
+        }
+
+        /* ── Header ── */
+        .app-header {
+            background: var(--text);
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .app-header .logo-pixel {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            grid-template-columns: repeat(4, 7px);
+            grid-template-rows: repeat(4, 7px);
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .app-header .logo-pixel span {
+            display: block;
+            background: var(--btn);
+        }
+
+        .app-header .logo-pixel span.off {
+            background: transparent;
+        }
+
+        .app-header h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            line-height: 1;
+        }
+
+        .app-header h1 small {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--accent);
+            display: block;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* ── Layout ── */
+        .app-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 760px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                order: -1;
+            }
+        }
+
+        /* ── Panels ── */
+        .panel {
+            background: var(--panel-white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-panel);
+            padding: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .panel-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--btn);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* ── Inputs ── */
+        label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 5px;
+            letter-spacing: 0.04em;
+        }
+
+        textarea,
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.78rem;
+            color: var(--text);
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-input);
+            padding: 8px 10px;
+            transition: border-color 0.15s;
+            outline: none;
+        }
+
+        textarea:focus,
+        input:focus,
+        select:focus {
+            border-color: var(--btn);
+            box-shadow: 0 0 0 3px rgba(239, 165, 81, 0.18);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.72rem;
+            line-height: 1.4;
+        }
+
+        /* ── Drag Drop ── */
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-input);
+            padding: 16px;
+            text-align: center;
+            font-size: 0.74rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--btn);
+            background: rgba(239, 165, 81, 0.06);
+            color: var(--text);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .drop-zone .drop-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* ── Buttons ── */
+        button {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            border: none;
+            border-radius: var(--radius-btn);
+            padding: 9px 16px;
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            outline: none;
+        }
+
+        button:focus-visible {
+            box-shadow: 0 0 0 3px var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--btn);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--btn-hover);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+
+        .btn-secondary {
+            background: var(--panel);
+            color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+            font-size: 0.72rem;
+            padding: 7px 12px;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text);
+            background: var(--panel);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn-row button {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        /* ── Input section tabs ── */
+        .input-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-input);
+            padding: 3px;
+            border: 1.5px solid var(--border);
+        }
+
+        .input-tab {
+            flex: 1;
+            padding: 6px 8px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: transparent;
+            color: var(--muted);
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .input-tab.active {
+            background: var(--panel-white);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .input-tab:focus-visible {
+            box-shadow: 0 0 0 3px var(--accent);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ── Colour detection ── */
+        .colour-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .colour-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .colour-swatch {
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            background: #ccc;
+        }
+
+        .colour-hex {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--muted);
+            min-width: 58px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .colour-row input[type="color"] {
+            width: 36px;
+            height: 28px;
+            padding: 2px;
+            border-radius: 5px;
+            border: 1.5px solid var(--border);
+            cursor: pointer;
+            background: var(--panel-white);
+            flex-shrink: 0;
+        }
+
+        .no-colours {
+            font-size: 0.74rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* ── Brand palette ── */
+        .palette-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .palette-swatch-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .palette-swatch-wrap input[type="color"] {
+            width: 36px;
+            height: 36px;
+            padding: 2px;
+            border-radius: 6px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            background: var(--panel-white);
+        }
+
+        /* ── Export settings ── */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* ── Toggle ── */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-wrap label {
+            margin: 0;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 20px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: var(--btn);
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(16px);
+        }
+
+        /* ── Right panel / Preview ── */
+        .right-panel {
+            position: sticky;
+            top: 20px;
+        }
+
+        .preview-panel {
+            background: var(--preview-bg);
+            border-radius: var(--radius-panel);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            min-height: 340px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .preview-header-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .preview-header-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .preview-header-actions button {
+            font-size: 0.65rem;
+            padding: 4px 9px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+
+        .preview-header-actions button:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            min-height: 280px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-area.checkerboard {
+            background-image:
+                linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .preview-area svg {
+            max-width: 100%;
+            max-height: 260px;
+            object-fit: contain;
+        }
+
+        .preview-empty {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.8rem;
+        }
+
+        .preview-empty .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            opacity: 0.4;
+        }
+
+        .preview-meta {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 16px;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.05em;
+            display: flex;
+            gap: 16px;
+        }
+
+        /* ── Status / Error ── */
+        .status-msg {
+            font-size: 0.72rem;
+            padding: 8px 12px;
+            border-radius: var(--radius-input);
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .status-msg.error {
+            display: block;
+            background: #fde8e8;
+            color: #c0392b;
+            border: 1px solid #f5c6c6;
+        }
+
+        .status-msg.success {
+            display: block;
+            background: #e8f8ee;
+            color: #27ae60;
+            border: 1px solid #b8e8c8;
+        }
+
+        /* ── Section spacer ── */
+        .spacer {
+            height: 8px;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Header ── -->
+    <header class="app-header">
+        <div class="logo-pixel" aria-hidden="true">
+            <span></span><span></span><span class="off"></span><span></span>
+            <span></span><span class="off"></span><span></span><span></span>
+            <span class="off"></span><span></span><span></span><span class="off"></span>
+            <span></span><span></span><span class="off"></span><span></span>
+        </div>
+        <h1>MS Asset Generator <small>v1.0</small></h1>
+        <a href="../index.html" aria-label="gav.fi tools" style="margin-left:auto;opacity:.5;transition:opacity .2s;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="48" height="32" shape-rendering="crispEdges" style="image-rendering:pixelated"><rect x="3" y="0" width="8" height="1" fill="#fbf236"/><rect x="0" y="1" width="4" height="1" fill="#fbf236"/><rect x="4" y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/><rect x="0" y="2" width="1" height="1" fill="#ffce10"/><rect x="1" y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/><rect x="0" y="3" width="2" height="1" fill="#ffce10"/><rect x="2" y="3" width="3" height="1" fill="#222034"/><rect x="5" y="3" width="1" height="1" fill="#ffce10"/><rect x="6" y="3" width="1" height="1" fill="#fbf236"/><rect x="7" y="3" width="2" height="1" fill="#222034"/><rect x="9" y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/><rect x="1" y="4" width="2" height="1" fill="#ffce10"/><rect x="3" y="4" width="3" height="1" fill="#222034"/><rect x="6" y="4" width="1" height="1" fill="#fbf236"/><rect x="7" y="4" width="2" height="1" fill="#222034"/><rect x="9" y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/><rect x="2" y="5" width="2" height="1" fill="#ffce10"/><rect x="4" y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/><rect x="3" y="6" width="2" height="1" fill="#ffce10"/><rect x="5" y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/><rect x="4" y="7" width="7" height="1" fill="#ffce10"/></svg></a>
+    </header>
+
+    <!-- ── Main Layout ── -->
+    <div class="app-container">
+
+        <!-- ════ LEFT PANEL ════ -->
+        <div class="left-panel">
+
+            <!-- Status messages -->
+            <div id="statusMsg" class="status-msg" role="alert"></div>
+
+            <!-- ── Input Panel ── -->
+            <div class="panel">
+                <div class="panel-title">SVG Input</div>
+
+                <!-- Tab buttons -->
+                <div class="input-tabs" role="tablist">
+                    <button class="input-tab active" role="tab" aria-selected="true" data-tab="paste">Paste</button>
+                    <button class="input-tab" role="tab" aria-selected="false" data-tab="upload">Upload</button>
+                    <button class="input-tab" role="tab" aria-selected="false" data-tab="preset">Presets</button>
+                </div>
+
+                <!-- Paste tab -->
+                <div class="tab-panel active" id="tab-paste">
+                    <label for="svgInput">Paste SVG code</label>
+                    <textarea id="svgInput"
+                        placeholder='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">...</svg>' rows="5"
+                        spellcheck="false"></textarea>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="loadSvgBtn">Load SVG</button>
+                        <button class="btn-ghost" id="clearBtn">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Upload tab -->
+                <div class="tab-panel" id="tab-upload">
+                    <label>Upload or drag &amp; drop .svg file</label>
+                    <div class="drop-zone" id="dropZone">
+                        <span class="drop-icon">📂</span>
+                        <span>Click to browse or drag &amp; drop SVG here</span>
+                        <input type="file" id="fileInput" accept=".svg,image/svg+xml" aria-label="Upload SVG file">
+                    </div>
+                </div>
+
+                <!-- Preset tab -->
+                <div class="tab-panel" id="tab-preset">
+                    <label for="presetSelect">Choose a preset asset</label>
+                    <select id="presetSelect">
+                        <option value="">— Select a preset —</option>
+                    </select>
+                    <div class="btn-row">
+                        <button class="btn-primary" id="loadPresetBtn">Load Preset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Detected Colours ── -->
+            <div class="panel">
+                <div class="panel-title">Detected Colours</div>
+                <div id="colourList" class="colour-list">
+                    <p class="no-colours">Load an SVG to detect colours.</p>
+                </div>
+                <div class="btn-row">
+                    <button class="btn-secondary" id="resetColoursBtn" style="display:none">↺ Reset Colours</button>
+                    <button class="btn-ghost" id="copySvgBtn" style="display:none">⎘ Copy SVG</button>
+                </div>
+            </div>
+
+            <!-- ── Brand Palette ── -->
+            <div class="panel">
+                <div class="panel-title">Brand Palette</div>
+                <div class="palette-grid" id="brandPaletteGrid"></div>
+                <button class="btn-primary" id="applyPaletteBtn" style="width:100%">Apply Brand Palette</button>
+            </div>
+
+            <!-- ── Export Settings ── -->
+            <div class="panel">
+                <div class="panel-title">Export Settings</div>
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label for="exportWidth">Export width (px)</label>
+                        <input type="number" id="exportWidth" value="800" min="1" max="8000" step="1">
+                    </div>
+                    <div class="setting-group">
+                        <label for="pixelScale">Pixel scale</label>
+                        <select id="pixelScale">
+                            <option value="2">2×</option>
+                            <option value="4">4×</option>
+                            <option value="8" selected>8×</option>
+                            <option value="16">16×</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="toggle-wrap">
+                    <label class="toggle">
+                        <input type="checkbox" id="checkerToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label for="checkerToggle">Transparency checkerboard</label>
+                </div>
+            </div>
+
+            <!-- ── Export Buttons ── -->
+            <div class="panel">
+                <div class="panel-title">Export</div>
+                <div class="btn-row">
+                    <button class="btn-primary" id="exportSvgBtn">↓ SVG</button>
+                    <button class="btn-primary" id="exportPngBtn">↓ PNG (Hi-Res)</button>
+                    <button class="btn-primary" id="exportPixelBtn">↓ PNG (Pixel)</button>
+                </div>
+            </div>
+
+        </div><!-- /left-panel -->
+
+        <!-- ════ RIGHT PANEL ════ -->
+        <div class="right-panel">
+            <div class="preview-panel">
+                <div class="preview-header">
+                    <span class="preview-header-title">Live Preview</span>
+                    <div class="preview-header-actions">
+                        <button id="fitToggleBtn" title="Toggle fit/contain">⊞ Contain</button>
+                    </div>
+                </div>
+                <div class="preview-area" id="previewArea">
+                    <div class="preview-empty" id="previewEmpty">
+                        <div class="empty-icon">🎨</div>
+                        <p>Load an SVG to preview</p>
+                    </div>
+                    <div id="svgPreview"></div>
+                </div>
+                <div class="preview-meta" id="previewMeta"></div>
+            </div>
+        </div>
+
+    </div><!-- /app-container -->
+
+    <!-- ── Hidden canvas for export ── -->
+    <canvas id="exportCanvas" style="display:none"></canvas>
+
+    <script>
+        /* ═══════════════════════════════════════════════
+           ── Preset Assets ──
+           Add new assets by inserting entries below.
+           Structure: { "Group": { "Name": "<svg>..." } }
+        ═══════════════════════════════════════════════ */
+        const presetAssets = {
+            "Logos": {
+                "Mav": `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="32" viewBox="0 0 480 320"
+        preserveAspectRatio="xMidYMid meet" >
+        <rect x="120" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="160" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="200" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="240" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="280" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="320" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="360" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="400" y="0" width="40" height="40" style="fill:#fbf236" />
+        <rect x="0" y="40" width="40" height="40" style="fill:#fbf236" />
+        <rect x="40" y="40" width="40" height="40" style="fill:#fbf236" />
+        <rect x="80" y="40" width="40" height="40" style="fill:#fbf236" />
+        <rect x="120" y="40" width="40" height="40" style="fill:#fbf236" />
+        <rect x="160" y="40" width="40" height="40" style="fill:#222034" />
+        <rect x="200" y="40" width="40" height="40" style="fill:#222034" />
+        <rect x="240" y="40" width="40" height="40" style="fill:#222034" />
+        <rect x="280" y="40" width="40" height="40" style="fill:#222034" />
+        <rect x="320" y="40" width="40" height="40" style="fill:#222034" />
+        <rect x="360" y="40" width="40" height="40" style="fill:#222034" />
+        <rect x="400" y="40" width="40" height="40" style="fill:#fbf236" />
+        <rect x="440" y="40" width="40" height="40" style="fill:#fbf236" />
+        <rect x="0" y="80" width="40" height="40" style="fill:#ffce10" />
+        <rect x="40" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="80" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="120" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="160" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="200" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="240" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="280" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="320" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="360" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="400" y="80" width="40" height="40" style="fill:#222034" />
+        <rect x="440" y="80" width="40" height="40" style="fill:#fbf236" />
+        <rect x="0" y="120" width="40" height="40" style="fill:#ffce10" />
+        <rect x="40" y="120" width="40" height="40" style="fill:#ffce10" />
+        <rect x="80" y="120" width="40" height="40" style="fill:#222034" />
+        <rect x="120" y="120" width="40" height="40" style="fill:#222034" />
+        <rect x="160" y="120" width="40" height="40" style="fill:#222034" />
+        <rect x="200" y="120" width="40" height="40" style="fill:#ffce10" />
+        <rect x="240" y="120" width="40" height="40" style="fill:#fbf236" />
+        <rect x="280" y="120" width="40" height="40" style="fill:#222034" />
+        <rect x="320" y="120" width="40" height="40" style="fill:#222034" />
+        <rect x="360" y="120" width="40" height="40" style="fill:#fbf236" />
+        <rect x="400" y="120" width="40" height="40" style="fill:#222034" />
+        <rect x="440" y="120" width="40" height="40" style="fill:#fbf236" />
+        <rect x="40" y="160" width="40" height="40" style="fill:#ffce10" />
+        <rect x="80" y="160" width="40" height="40" style="fill:#ffce10" />
+        <rect x="120" y="160" width="40" height="40" style="fill:#222034" />
+        <rect x="160" y="160" width="40" height="40" style="fill:#222034" />
+        <rect x="200" y="160" width="40" height="40" style="fill:#222034" />
+        <rect x="240" y="160" width="40" height="40" style="fill:#fbf236" />
+        <rect x="280" y="160" width="40" height="40" style="fill:#222034" />
+        <rect x="320" y="160" width="40" height="40" style="fill:#222034" />
+        <rect x="360" y="160" width="40" height="40" style="fill:#fbf236" />
+        <rect x="400" y="160" width="40" height="40" style="fill:#222034" />
+        <rect x="440" y="160" width="40" height="40" style="fill:#fbf236" />
+        <rect x="80" y="200" width="40" height="40" style="fill:#ffce10" />
+        <rect x="120" y="200" width="40" height="40" style="fill:#ffce10" />
+        <rect x="160" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="200" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="240" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="280" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="320" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="360" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="400" y="200" width="40" height="40" style="fill:#222034" />
+        <rect x="440" y="200" width="40" height="40" style="fill:#fbf236" />
+        <rect x="120" y="240" width="40" height="40" style="fill:#ffce10" />
+        <rect x="160" y="240" width="40" height="40" style="fill:#ffce10" />
+        <rect x="200" y="240" width="40" height="40" style="fill:#222034" />
+        <rect x="240" y="240" width="40" height="40" style="fill:#222034" />
+        <rect x="280" y="240" width="40" height="40" style="fill:#222034" />
+        <rect x="320" y="240" width="40" height="40" style="fill:#222034" />
+        <rect x="360" y="240" width="40" height="40" style="fill:#222034" />
+        <rect x="400" y="240" width="40" height="40" style="fill:#fbf236" />
+        <rect x="440" y="240" width="40" height="40" style="fill:#fbf236" />
+        <rect x="160" y="280" width="40" height="40" style="fill:#ffce10" />
+        <rect x="200" y="280" width="40" height="40" style="fill:#ffce10" />
+        <rect x="240" y="280" width="40" height="40" style="fill:#ffce10" />
+        <rect x="280" y="280" width="40" height="40" style="fill:#ffce10" />
+        <rect x="320" y="280" width="40" height="40" style="fill:#ffce10" />
+        <rect x="360" y="280" width="40" height="40" style="fill:#ffce10" />
+        <rect x="400" y="280" width="40" height="40" style="fill:#ffce10" />
+      </svg>`
+            },
+            "Icons": {
+                "Star Icon": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="48" height="32">
+      <polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="#efa551" stroke="#d48a3a" stroke-width="2"/>
+    </svg>`,
+                "Heart Icon": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="48" height="32">
+      <path d="M50,80 C50,80 10,55 10,30 C10,16 20,8 30,8 C38,8 46,13 50,20 C54,13 62,8 70,8 C80,8 90,16 90,30 C90,55 50,80 50,80Z" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    </svg>`,
+                "Check Icon": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="48" height="32">
+      <circle cx="50" cy="50" r="46" fill="#27ae60" stroke="#1e8449" stroke-width="3"/>
+      <polyline points="25,52 42,68 75,34" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`
+            },
+            "Shapes": {
+                "Colourful Grid": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="48" height="32">
+      <rect x="5" y="5" width="42" height="42" rx="6" fill="#efa551"/>
+      <rect x="53" y="5" width="42" height="42" rx="6" fill="#222034"/>
+      <rect x="5" y="53" width="42" height="42" rx="6" fill="#ffd966"/>
+      <rect x="53" y="53" width="42" height="42" rx="6" fill="#d4ceca"/>
+    </svg>`,
+                "Gradient Rings": `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="48" height="32">
+      <circle cx="50" cy="50" r="45" fill="none" stroke="#efa551" stroke-width="8"/>
+      <circle cx="50" cy="50" r="33" fill="none" stroke="#ffd966" stroke-width="6"/>
+      <circle cx="50" cy="50" r="20" fill="none" stroke="#222034" stroke-width="5"/>
+      <circle cx="50" cy="50" r="8" fill="#efa551"/>
+    </svg>`
+            }
+        };
+
+        /* ═══════════════════════════════════════════════
+           ── State ──
+        ═══════════════════════════════════════════════ */
+        const state = {
+            originalSvgString: null,
+            currentSvgString: null,
+            colourMap: {}, // original hex → replacement hex
+            detectedColours: [], // list of original hex values
+            svgDimensions: { width: 0, height: 0, viewBox: '' },
+            fitMode: 'contain'
+        };
+
+        const defaultBrandPalette = ['#efa551', '#222034', '#ffd966', '#d4ceca', '#27ae60', '#e74c3c'];
+
+        /* ═══════════════════════════════════════════════
+           ── Utility: Colour Normalisation ──
+        ═══════════════════════════════════════════════ */
+        function normaliseColour(val) {
+            if (!val) return null;
+            val = val.trim().toLowerCase();
+            if (val === 'none' || val === 'transparent' || val === 'inherit' || val === 'currentcolor' || val === '') return null;
+
+            // Named colours → hex via canvas
+            if (!val.startsWith('#') && !val.startsWith('rgb') && !val.startsWith('hsl')) {
+                const ctx = document.createElement('canvas').getContext('2d');
+                ctx.fillStyle = val;
+                const computed = ctx.fillStyle;
+                if (computed === '#000000' && val !== 'black') return null; // invalid
+                return computed;
+            }
+
+            if (val.startsWith('#')) {
+                if (val.length === 4) {
+                    return '#' + val[1] + val[1] + val[2] + val[2] + val[3] + val[3];
+                }
+                return val.length === 7 ? val : null;
+            }
+
+            // rgb / rgba
+            const m = val.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+            if (m) {
+                return '#' + [m[1], m[2], m[3]].map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
+            }
+
+            return null;
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── SVG Processing ──
+        ═══════════════════════════════════════════════ */
+        function parseSvg(svgString) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgString, 'image/svg+xml');
+            const errNode = doc.querySelector('parsererror');
+            if (errNode) return { error: 'Invalid SVG: ' + errNode.textContent.slice(0, 120) };
+            return { doc, svgEl: doc.querySelector('svg') };
+        }
+
+        function extractColours(svgString) {
+            const { doc, svgEl, error } = parseSvg(svgString);
+            if (error) return { error };
+            const colourSet = new Set();
+            const all = svgEl.querySelectorAll('*');
+
+            function checkAttr(el, attr) {
+                const v = el.getAttribute(attr);
+                if (v) { const h = normaliseColour(v); if (h) colourSet.add(h); }
+            }
+            function checkStyle(el) {
+                const s = el.getAttribute('style') || '';
+                const fillM = s.match(/fill\s*:\s*([^;]+)/i);
+                const strokeM = s.match(/stroke\s*:\s*([^;]+)/i);
+                if (fillM) { const h = normaliseColour(fillM[1]); if (h) colourSet.add(h); }
+                if (strokeM) { const h = normaliseColour(strokeM[1]); if (h) colourSet.add(h); }
+            }
+
+            all.forEach(el => {
+                checkAttr(el, 'fill');
+                checkAttr(el, 'stroke');
+                checkStyle(el);
+            });
+            // also root svg
+            checkAttr(svgEl, 'fill');
+            checkAttr(svgEl, 'stroke');
+            checkStyle(svgEl);
+
+            return { colours: [...colourSet] };
+        }
+
+        function applyColourMap(svgString, colourMap) {
+            const { doc, svgEl, error } = parseSvg(svgString);
+            if (error) return svgString;
+
+            const all = [svgEl, ...svgEl.querySelectorAll('*')];
+
+            function replaceAttr(el, attr) {
+                const v = el.getAttribute(attr);
+                if (!v) return;
+                const h = normaliseColour(v);
+                if (h && colourMap[h] && colourMap[h] !== h) {
+                    el.setAttribute(attr, colourMap[h]);
+                }
+            }
+            function replaceStyle(el) {
+                let s = el.getAttribute('style');
+                if (!s) return;
+                s = s.replace(/fill\s*:\s*([^;]+)/gi, (m, val) => {
+                    const h = normaliseColour(val.trim());
+                    return h && colourMap[h] ? `fill:${colourMap[h]}` : m;
+                });
+                s = s.replace(/stroke\s*:\s*([^;]+)/gi, (m, val) => {
+                    const h = normaliseColour(val.trim());
+                    return h && colourMap[h] ? `stroke:${colourMap[h]}` : m;
+                });
+                el.setAttribute('style', s);
+            }
+
+            all.forEach(el => {
+                replaceAttr(el, 'fill');
+                replaceAttr(el, 'stroke');
+                replaceStyle(el);
+            });
+
+            return new XMLSerializer().serializeToString(doc);
+        }
+
+        function getSvgDimensions(svgEl) {
+            const vb = svgEl.getAttribute('viewBox');
+            let w = parseFloat(svgEl.getAttribute('width')) || 0;
+            let h = parseFloat(svgEl.getAttribute('height')) || 0;
+            if (vb) {
+                const parts = vb.split(/[\s,]+/).map(Number);
+                if (parts.length === 4) {
+                    if (!w) w = parts[2];
+                    if (!h) h = parts[3];
+                }
+            }
+            return { width: w || 200, height: h || 200, viewBox: vb || `0 0 ${w} ${h}` };
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── UI: Preset Dropdown ──
+        ═══════════════════════════════════════════════ */
+        function buildPresetDropdown() {
+            const sel = document.getElementById('presetSelect');
+            for (const [group, items] of Object.entries(presetAssets)) {
+                const og = document.createElement('optgroup');
+                og.label = group;
+                for (const name of Object.keys(items)) {
+                    const opt = document.createElement('option');
+                    opt.value = group + '::' + name;
+                    opt.textContent = name;
+                    og.appendChild(opt);
+                }
+                sel.appendChild(og);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── UI: Colour List ──
+        ═══════════════════════════════════════════════ */
+        function renderColourList() {
+            const list = document.getElementById('colourList');
+            const resetBtn = document.getElementById('resetColoursBtn');
+            const copyBtn = document.getElementById('copySvgBtn');
+
+            if (!state.detectedColours.length) {
+                list.innerHTML = '<p class="no-colours">No colours detected.</p>';
+                resetBtn.style.display = 'none';
+                copyBtn.style.display = 'none';
+                return;
+            }
+
+            resetBtn.style.display = '';
+            copyBtn.style.display = '';
+            list.innerHTML = '';
+
+            state.detectedColours.forEach(origHex => {
+                const current = state.colourMap[origHex] || origHex;
+                const row = document.createElement('div');
+                row.className = 'colour-row';
+
+                const swatch = document.createElement('div');
+                swatch.className = 'colour-swatch';
+                swatch.style.background = origHex;
+                swatch.title = 'Original: ' + origHex;
+
+                const hexLabel = document.createElement('span');
+                hexLabel.className = 'colour-hex';
+                hexLabel.textContent = origHex;
+
+                const arrow = document.createElement('span');
+                arrow.style.cssText = 'color:var(--muted);font-size:0.8rem;';
+                arrow.textContent = '→';
+
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.value = current;
+                picker.setAttribute('aria-label', 'Replace colour ' + origHex);
+                picker.addEventListener('input', () => {
+                    state.colourMap[origHex] = picker.value;
+                    updatePreview();
+                });
+
+                row.appendChild(swatch);
+                row.appendChild(hexLabel);
+                row.appendChild(arrow);
+                row.appendChild(picker);
+                list.appendChild(row);
+            });
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── UI: Brand Palette ──
+        ═══════════════════════════════════════════════ */
+        function buildBrandPalette() {
+            const grid = document.getElementById('brandPaletteGrid');
+            grid.innerHTML = '';
+            defaultBrandPalette.forEach((col, i) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'palette-swatch-wrap';
+                const inp = document.createElement('input');
+                inp.type = 'color';
+                inp.value = col;
+                inp.id = 'paletteColor' + i;
+                inp.setAttribute('aria-label', 'Brand colour ' + (i + 1));
+                wrap.appendChild(inp);
+                grid.appendChild(wrap);
+            });
+        }
+
+        function getBrandPalette() {
+            return defaultBrandPalette.map((_, i) => {
+                const el = document.getElementById('paletteColor' + i);
+                return el ? el.value : defaultBrandPalette[i];
+            });
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── UI: Preview ──
+        ═══════════════════════════════════════════════ */
+        function updatePreview() {
+            if (!state.originalSvgString) return;
+            const mapped = applyColourMap(state.originalSvgString, state.colourMap);
+            state.currentSvgString = mapped;
+
+            const previewArea = document.getElementById('previewArea');
+            const previewEl = document.getElementById('svgPreview');
+            const emptyEl = document.getElementById('previewEmpty');
+            const metaEl = document.getElementById('previewMeta');
+
+            const { doc, svgEl, error } = parseSvg(mapped);
+            if (error) { showStatus(error, 'error'); return; }
+
+            const dims = getSvgDimensions(svgEl);
+            state.svgDimensions = dims;
+
+            // style the SVG for preview
+            svgEl.style.maxWidth = '100%';
+            svgEl.style.maxHeight = '260px';
+            svgEl.style.objectFit = state.fitMode;
+
+            previewEl.innerHTML = '';
+            previewEl.appendChild(svgEl);
+            emptyEl.style.display = 'none';
+            previewEl.style.display = '';
+
+            const ratio = dims.width && dims.height ? (dims.width / dims.height).toFixed(2) : '—';
+            metaEl.textContent = `${Math.round(dims.width)} × ${Math.round(dims.height)}px  ·  ratio ${ratio}  ·  ${state.detectedColours.length} colour${state.detectedColours.length !== 1 ? 's' : ''}`;
+        }
+
+        function setCheckerboard(on) {
+            const area = document.getElementById('previewArea');
+            area.classList.toggle('checkerboard', on);
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── Status Messages ──
+        ═══════════════════════════════════════════════ */
+        function showStatus(msg, type = 'success') {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = 'status-msg ' + type;
+            clearTimeout(el._timer);
+            if (type === 'success') {
+                el._timer = setTimeout(() => { el.style.display = 'none'; }, 3000);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── Load SVG ──
+        ═══════════════════════════════════════════════ */
+        function loadSvgString(svgString) {
+            svgString = svgString.trim();
+            if (!svgString) { showStatus('Please paste or load an SVG first.', 'error'); return; }
+
+            const { error } = parseSvg(svgString);
+            if (error) { showStatus(error, 'error'); return; }
+
+            state.originalSvgString = svgString;
+            state.colourMap = {};
+            state.currentSvgString = svgString;
+
+            const { colours, error: ce } = extractColours(svgString);
+            if (ce) { showStatus(ce, 'error'); return; }
+
+            state.detectedColours = colours || [];
+            colours.forEach(c => { state.colourMap[c] = c; });
+
+            renderColourList();
+            updatePreview();
+            showStatus('SVG loaded — ' + state.detectedColours.length + ' colour(s) detected.', 'success');
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── Export Functions ──
+        ═══════════════════════════════════════════════ */
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function exportSvg() {
+            if (!state.currentSvgString) { showStatus('No SVG loaded.', 'error'); return; }
+            const blob = new Blob([state.currentSvgString], { type: 'image/svg+xml' });
+            downloadFile(blob, 'asset.svg');
+            showStatus('SVG exported!', 'success');
+        }
+
+        function svgToPng(svgString, width, pixelMode = false, scale = 1, callback) {
+            const { doc, svgEl, error } = parseSvg(svgString);
+            if (error) { showStatus(error, 'error'); return; }
+
+            const dims = getSvgDimensions(svgEl);
+            const aspect = dims.height / dims.width;
+
+            let canvasW, canvasH;
+            if (pixelMode) {
+                canvasW = Math.round(dims.width * scale);
+                canvasH = Math.round(dims.height * scale);
+            } else {
+                canvasW = width;
+                canvasH = Math.round(width * aspect);
+            }
+
+            const serialised = new XMLSerializer().serializeToString(doc);
+            const blob = new Blob([serialised], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.getElementById('exportCanvas');
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvasW, canvasH);
+                if (pixelMode) {
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.mozImageSmoothingEnabled = false;
+                    ctx.webkitImageSmoothingEnabled = false;
+                }
+                ctx.drawImage(img, 0, 0, canvasW, canvasH);
+                URL.revokeObjectURL(url);
+                canvas.toBlob(pngBlob => callback(pngBlob), 'image/png');
+            };
+            img.onerror = () => { showStatus('PNG render failed.', 'error'); URL.revokeObjectURL(url); };
+            img.src = url;
+        }
+
+        function exportPng() {
+            if (!state.currentSvgString) { showStatus('No SVG loaded.', 'error'); return; }
+            const width = parseInt(document.getElementById('exportWidth').value, 10) || 800;
+            svgToPng(state.currentSvgString, width, false, 1, blob => {
+                downloadFile(blob, 'asset.png');
+                showStatus('High-res PNG exported (' + width + 'px)!', 'success');
+            });
+        }
+
+        function exportPixelPng() {
+            if (!state.currentSvgString) { showStatus('No SVG loaded.', 'error'); return; }
+            const scale = parseInt(document.getElementById('pixelScale').value, 10) || 8;
+            svgToPng(state.currentSvgString, 0, true, scale, blob => {
+                downloadFile(blob, 'asset-pixel-' + scale + 'x.png');
+                showStatus('Pixel PNG exported (' + scale + '×)!', 'success');
+            });
+        }
+
+        /* ═══════════════════════════════════════════════
+           ── UI Events ──
+        ═══════════════════════════════════════════════ */
+        // Tab switching
+        document.querySelectorAll('.input-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.input-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                tab.setAttribute('aria-selected', 'true');
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Load SVG from textarea
+        document.getElementById('loadSvgBtn').addEventListener('click', () => {
+            loadSvgString(document.getElementById('svgInput').value);
+        });
+
+        // Clear
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('svgInput').value = '';
+            state.originalSvgString = null;
+            state.currentSvgString = null;
+            state.detectedColours = [];
+            state.colourMap = {};
+            document.getElementById('colourList').innerHTML = '<p class="no-colours">Load an SVG to detect colours.</p>';
+            document.getElementById('svgPreview').innerHTML = '';
+            document.getElementById('previewEmpty').style.display = '';
+            document.getElementById('previewMeta').textContent = '';
+            document.getElementById('resetColoursBtn').style.display = 'none';
+            document.getElementById('copySvgBtn').style.display = 'none';
+            document.getElementById('statusMsg').style.display = 'none';
+        });
+
+        // File upload
+        document.getElementById('fileInput').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => loadSvgString(ev.target.result);
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.name.endsWith('.svg')) { showStatus('Please drop a .svg file.', 'error'); return; }
+            const reader = new FileReader();
+            reader.onload = ev => loadSvgString(ev.target.result);
+            reader.readAsText(file);
+        });
+
+        // Load preset
+        document.getElementById('loadPresetBtn').addEventListener('click', () => {
+            const val = document.getElementById('presetSelect').value;
+            if (!val) { showStatus('Please select a preset.', 'error'); return; }
+            const [group, name] = val.split('::');
+            const svg = presetAssets[group]?.[name];
+            if (!svg) { showStatus('Preset not found.', 'error'); return; }
+            loadSvgString(svg);
+            document.getElementById('svgInput').value = svg;
+        });
+
+        // Reset colours
+        document.getElementById('resetColoursBtn').addEventListener('click', () => {
+            if (!state.detectedColours.length) return;
+            state.detectedColours.forEach(c => { state.colourMap[c] = c; });
+            renderColourList();
+            updatePreview();
+            showStatus('Colours reset.', 'success');
+        });
+
+        // Apply brand palette
+        document.getElementById('applyPaletteBtn').addEventListener('click', () => {
+            if (!state.detectedColours.length) { showStatus('Load an SVG first.', 'error'); return; }
+            const palette = getBrandPalette();
+            state.detectedColours.forEach((origHex, i) => {
+                state.colourMap[origHex] = palette[i % palette.length];
+            });
+            renderColourList();
+            updatePreview();
+            showStatus('Brand palette applied!', 'success');
+        });
+
+        // Copy SVG
+        document.getElementById('copySvgBtn').addEventListener('click', () => {
+            if (!state.currentSvgString) return;
+            navigator.clipboard.writeText(state.currentSvgString)
+                .then(() => showStatus('SVG copied to clipboard!', 'success'))
+                .catch(() => showStatus('Copy failed — try CTRL+C.', 'error'));
+        });
+
+        // Export buttons
+        document.getElementById('exportSvgBtn').addEventListener('click', exportSvg);
+        document.getElementById('exportPngBtn').addEventListener('click', exportPng);
+        document.getElementById('exportPixelBtn').addEventListener('click', exportPixelPng);
+
+        // Checkerboard toggle
+        document.getElementById('checkerToggle').addEventListener('change', e => {
+            setCheckerboard(e.target.checked);
+        });
+
+        // Fit toggle
+        document.getElementById('fitToggleBtn').addEventListener('click', () => {
+            state.fitMode = state.fitMode === 'contain' ? 'none' : 'contain';
+            document.getElementById('fitToggleBtn').textContent = state.fitMode === 'contain' ? '⊞ Contain' : '⊟ Original';
+            updatePreview();
+        });
+
+        /* ═══════════════════════════════════════════════
+           ── Init ──
+        ═══════════════════════════════════════════════ */
+        buildPresetDropdown();
+        buildBrandPalette();
+    </script>
+</body>
+
+</html>

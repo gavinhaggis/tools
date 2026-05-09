@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMMENT CARD — AV Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0c0e;
+    --surface: #141416;
+    --surface2: #1c1c20;
+    --border: #2a2a30;
+    --text: #f0f0f4;
+    --muted: #6b6b7a;
+    --accent: #e8ff47;
+    --accent2: #ff4fd8;
+    --radius: 12px;
+    --font-ui: 'DM Mono', monospace;
+    --font-display: 'Syne', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  /* ── HEADER ── */
+  header {
+    grid-column: 1 / -1;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .btn-primary:hover { background: #fff; border-color: #fff; color: #000; }
+
+  .btn-ghost { border-color: transparent; color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border); }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── INPUTS ── */
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+  label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  input[type="text"], textarea {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+    resize: none;
+  }
+
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { min-height: 80px; line-height: 1.5; }
+
+  input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    padding: 2px;
+    background: transparent;
+  }
+
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border-radius: 50%; border: none; }
+
+  /* ── AVATAR DROPZONE ── */
+  .avatar-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .avatar-zone:hover, .avatar-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.04);
+  }
+
+  .avatar-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .avatar-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 8px;
+    display: block;
+    border: 2px solid var(--border);
+  }
+
+  .avatar-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--surface2);
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--muted);
+  }
+
+  .zone-hint { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* ── PRESETS ── */
+  .presets-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .preset-btn {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .preset-btn:hover { border-color: var(--accent); }
+  .preset-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
+
+  .preset-btn .preset-name {
+    display: block;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .preset-btn .preset-desc {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* ── PLATFORM ROW ── */
+  .platform-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .platform-pill {
+    font-size: 10px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    letter-spacing: 0.05em;
+  }
+
+  .platform-pill:hover { border-color: var(--text); color: var(--text); }
+  .platform-pill.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+  /* ── THEME TOGGLE ── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .toggle {
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--muted);
+    top: 2px;
+    left: 2px;
+    transition: all 0.2s;
+  }
+
+  .toggle.on { background: var(--accent); }
+  .toggle.on::after { left: 22px; background: #000; }
+
+  /* ── CANVAS AREA ── */
+  .canvas-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: var(--bg);
+    position: relative;
+    gap: 32px;
+  }
+
+  .canvas-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(232,255,71,0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255,79,216,0.03) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  /* ── PREVIEW CARD WRAPPER ── */
+  #preview-wrap {
+    position: relative;
+    filter: drop-shadow(0 24px 60px rgba(0,0,0,0.6));
+  }
+
+  #preview-canvas {
+    display: block;
+    border-radius: 16px;
+    max-width: 100%;
+  }
+
+  .canvas-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .size-note {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── COLOR ROW ── */
+  .color-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .color-swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .color-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── RANGE ── */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ── FLASH ── */
+  @keyframes flashIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .flash {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 99px;
+    animation: flashIn 0.2s ease;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  @media (max-width: 700px) {
+    body {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto 1fr;
+    }
+    .panel {
+      max-height: 50vh;
+      overflow-y: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    header { padding: 12px 16px; }
+    .header-actions { gap: 6px; }
+    .header-actions button { padding: 6px 10px; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Comment<span>.card</span> — AV Generator</div>
+  <div class="header-actions">
+    <a href="../index.html" aria-label="gav.fi tools" style="opacity:.4;transition:opacity .2s;line-height:0;display:inline-flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" width="36" height="24" shape-rendering="crispEdges" style="image-rendering:pixelated"><rect x="3" y="0" width="8" height="1" fill="#fbf236"/><rect x="0" y="1" width="4" height="1" fill="#fbf236"/><rect x="4" y="1" width="6" height="1" fill="#222034"/><rect x="10" y="1" width="2" height="1" fill="#fbf236"/><rect x="0" y="2" width="1" height="1" fill="#ffce10"/><rect x="1" y="2" width="10" height="1" fill="#222034"/><rect x="11" y="2" width="1" height="1" fill="#fbf236"/><rect x="0" y="3" width="2" height="1" fill="#ffce10"/><rect x="2" y="3" width="3" height="1" fill="#222034"/><rect x="5" y="3" width="1" height="1" fill="#ffce10"/><rect x="6" y="3" width="1" height="1" fill="#fbf236"/><rect x="7" y="3" width="2" height="1" fill="#222034"/><rect x="9" y="3" width="1" height="1" fill="#fbf236"/><rect x="10" y="3" width="1" height="1" fill="#222034"/><rect x="11" y="3" width="1" height="1" fill="#fbf236"/><rect x="1" y="4" width="2" height="1" fill="#ffce10"/><rect x="3" y="4" width="3" height="1" fill="#222034"/><rect x="6" y="4" width="1" height="1" fill="#fbf236"/><rect x="7" y="4" width="2" height="1" fill="#222034"/><rect x="9" y="4" width="1" height="1" fill="#fbf236"/><rect x="10" y="4" width="1" height="1" fill="#222034"/><rect x="11" y="4" width="1" height="1" fill="#fbf236"/><rect x="2" y="5" width="2" height="1" fill="#ffce10"/><rect x="4" y="5" width="7" height="1" fill="#222034"/><rect x="11" y="5" width="1" height="1" fill="#fbf236"/><rect x="3" y="6" width="2" height="1" fill="#ffce10"/><rect x="5" y="6" width="5" height="1" fill="#222034"/><rect x="10" y="6" width="2" height="1" fill="#fbf236"/><rect x="4" y="7" width="7" height="1" fill="#ffce10"/></svg></a>
+    <button class="btn btn-ghost" id="resetBtn">↺ Reset</button>
+    <button class="btn" id="themeToggleBtn">☀ Light UI</button>
+    <button class="btn btn-primary" id="exportBtn">⬇ Export PNG</button>
+  </div>
+</header>
+
+<!-- LEFT PANEL -->
+<div class="panel">
+
+  <!-- Platform -->
+  <div>
+    <div class="section-label">Platform style</div>
+    <div class="platform-row" id="platformRow">
+      <button class="platform-pill active" data-platform="instagram">Instagram</button>
+      <button class="platform-pill" data-platform="x">X / Twitter</button>
+      <button class="platform-pill" data-platform="tiktok">TikTok</button>
+      <button class="platform-pill" data-platform="facebook">Facebook</button>
+      <button class="platform-pill" data-platform="youtube">YouTube</button>
+    </div>
+  </div>
+
+  <!-- Visual Preset -->
+  <div>
+    <div class="section-label">Visual preset</div>
+    <div class="presets-grid" id="presetsGrid">
+      <button class="preset-btn active" data-preset="clean">
+        <span class="preset-name">Clean</span>
+        <span class="preset-desc">Editorial neutral</span>
+      </button>
+      <button class="preset-btn" data-preset="neon">
+        <span class="preset-name">Neon</span>
+        <span class="preset-desc">Club / nightlife</span>
+      </button>
+      <button class="preset-btn" data-preset="minimal">
+        <span class="preset-name">Minimal</span>
+        <span class="preset-desc">Swiss grid</span>
+      </button>
+      <button class="preset-btn" data-preset="brutalist">
+        <span class="preset-name">Brutalist</span>
+        <span class="preset-desc">Raw / oversized</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Avatar -->
+  <div>
+    <div class="section-label">Avatar</div>
+    <div class="avatar-zone" id="avatarZone">
+      <input type="file" id="avatarFile" accept="image/*">
+      <div class="avatar-placeholder" id="avatarPlaceholder">👤</div>
+      <img id="avatarPreviewImg" class="avatar-preview" style="display:none" alt="avatar">
+      <div class="zone-hint">Drop image here or click<br>Paste with Ctrl+V anywhere</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div>
+    <div class="section-label">Content</div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="usernameInput" placeholder="@username" maxlength="40">
+    </div>
+    <div class="field">
+      <label>Display name</label>
+      <input type="text" id="displayInput" placeholder="Display Name" maxlength="50">
+    </div>
+    <div class="field">
+      <label>Comment text</label>
+      <textarea id="commentInput" placeholder="Write your comment..." maxlength="280"></textarea>
+    </div>
+    <div class="field">
+      <label>Time label</label>
+      <input type="text" id="timeInput" placeholder="2h · ❤ 4.2K" maxlength="40">
+    </div>
+  </div>
+
+  <!-- Colors -->
+  <div>
+    <div class="section-label">Colors</div>
+    <div class="color-row">
+      <div>
+        <div class="color-label" style="margin-bottom:6px">Background</div>
+        <div class="color-swatch-row">
+          <input type="color" id="bgColor" value="#1a1a1a">
+          <span class="zone-hint" id="bgColorHex">#1a1a1a</span>
+        </div>
+      </div>
+      <div>
+        <div class="color-label" style="margin-bottom:6px">Text</div>
+        <div class="color-swatch-row">
+          <input type="color" id="textColor" value="#ffffff">
+          <span class="zone-hint" id="textColorHex">#ffffff</span>
+        </div>
+      </div>
+      <div>
+        <div class="color-label" style="margin-bottom:6px">Accent</div>
+        <div class="color-swatch-row">
+          <input type="color" id="accentColor" value="#e8ff47">
+          <span class="zone-hint" id="accentColorHex">#e8ff47</span>
+        </div>
+      </div>
+      <div>
+        <div class="color-label" style="margin-bottom:6px">Username</div>
+        <div class="color-swatch-row">
+          <input type="color" id="nameColor" value="#a0a0b0">
+          <span class="zone-hint" id="nameColorHex">#a0a0b0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scale -->
+  <div>
+    <div class="section-label">Scale</div>
+    <div class="field">
+      <label>Card width: <span id="widthVal">640</span>px</label>
+      <input type="range" id="widthRange" min="400" max="900" value="640" step="10">
+    </div>
+    <div class="field">
+      <label>Font size: <span id="fontVal">18</span>px</label>
+      <input type="range" id="fontRange" min="12" max="32" value="18" step="1">
+    </div>
+  </div>
+
+  <!-- Card mode -->
+  <div>
+    <div class="section-label">Card theme</div>
+    <div class="toggle-row">
+      <span class="color-label">Dark card</span>
+      <div class="toggle on" id="cardThemeToggle"></div>
+      <span class="color-label">Light card</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- CANVAS AREA -->
+<div class="canvas-area">
+  <div id="preview-wrap">
+    <canvas id="preview-canvas"></canvas>
+  </div>
+  <div class="canvas-controls">
+    <span class="size-note" id="sizeNote">640 × — px</span>
+    <button class="btn btn-primary" id="exportBtn2">⬇ Export PNG</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+const DEFAULT = {
+  username: '@username',
+  display: 'Display Name',
+  comment: 'This is absolutely incredible 🔥 Ive been waiting for this moment for so long omg',
+  time: '2h · ❤ 4.2K',
+  avatarSrc: null,
+  platform: 'instagram',
+  preset: 'clean',
+  bgColor: '#1a1a1a',
+  textColor: '#ffffff',
+  accentColor: '#e8ff47',
+  nameColor: '#a0a0b0',
+  width: 640,
+  fontSize: 18,
+  cardDark: true,
+};
+
+let state = { ...DEFAULT };
+let avatarImg = null;
+let lightUI = false;
+
+// ════════════════════════════════════════════
+//  PRESETS
+// ════════════════════════════════════════════
+const PRESETS = {
+  clean: {
+    bgColor: '#1a1a1e',
+    textColor: '#f0f0f4',
+    accentColor: '#5c9bff',
+    nameColor: '#8888aa',
+    fontFamily: "'Space Grotesk', sans-serif",
+    borderRadius: 20,
+    padding: 32,
+    avatarSize: 52,
+    usernameSize: 0.78,
+    commentWeight: '400',
+    shadow: 'rgba(0,0,0,0.5)',
+    verifiedColor: '#5c9bff',
+  },
+  neon: {
+    bgColor: '#0a0010',
+    textColor: '#ffffff',
+    accentColor: '#ff4fd8',
+    nameColor: '#cc88ff',
+    fontFamily: "'DM Mono', monospace",
+    borderRadius: 8,
+    padding: 28,
+    avatarSize: 56,
+    usernameSize: 0.72,
+    commentWeight: '400',
+    shadow: 'rgba(255,79,216,0.3)',
+    verifiedColor: '#ff4fd8',
+  },
+  minimal: {
+    bgColor: '#fafaf8',
+    textColor: '#111111',
+    accentColor: '#111111',
+    nameColor: '#666660',
+    fontFamily: "'Instrument Serif', serif",
+    borderRadius: 0,
+    padding: 40,
+    avatarSize: 44,
+    usernameSize: 0.68,
+    commentWeight: '400',
+    shadow: 'rgba(0,0,0,0.08)',
+    verifiedColor: '#111111',
+  },
+  brutalist: {
+    bgColor: '#ffff00',
+    textColor: '#000000',
+    accentColor: '#ff0000',
+    nameColor: '#333333',
+    fontFamily: "'Syne', sans-serif",
+    borderRadius: 0,
+    padding: 36,
+    avatarSize: 64,
+    usernameSize: 0.82,
+    commentWeight: '800',
+    shadow: 'rgba(0,0,0,0.2)',
+    verifiedColor: '#ff0000',
+  },
+};
+
+// ════════════════════════════════════════════
+//  PLATFORM CHROME DATA
+// ════════════════════════════════════════════
+const PLATFORMS = {
+  instagram: { likes: true,  replies: true,  verified: true,  likeIcon: '♥',  replyText: 'Reply',  handle: true },
+  x:         { likes: true,  replies: true,  verified: true,  likeIcon: '♡',  replyText: 'Reply',  handle: true },
+  tiktok:    { likes: true,  replies: false, verified: false, likeIcon: '♥',  replyText: '',       handle: false },
+  facebook:  { likes: true,  replies: true,  verified: false, likeIcon: '👍', replyText: 'Reply',  handle: false },
+  youtube:   { likes: true,  replies: true,  verified: true,  likeIcon: '👍', replyText: 'Reply',  handle: false },
+};
+
+// ════════════════════════════════════════════
+//  CANVAS RENDER
+// ════════════════════════════════════════════
+const canvas = document.getElementById('preview-canvas');
+const ctx = canvas.getContext('2d');
+
+function render() {
+  const preset = PRESETS[state.preset];
+  const platform = PLATFORMS[state.platform];
+  const DPR = 2;
+
+  // Resolve colors — preset baseline, overridden by user colors
+  const bg = state.bgColor;
+  const fg = state.textColor;
+  const acc = state.accentColor;
+  const sub = state.nameColor;
+  const ff = preset.fontFamily;
+
+  const W = state.width;
+  const pad = preset.padding;
+  const avSize = preset.avatarSize;
+  const baseFontSize = state.fontSize;
+  const lineH = baseFontSize * 1.6;
+  const commentSize = baseFontSize;
+  const nameSize = baseFontSize * preset.usernameSize;
+  const metaSize = baseFontSize * 0.66;
+
+  // Measure comment text height
+  ctx.font = `${preset.commentWeight} ${commentSize}px ${ff}`;
+  const maxW = W - pad * 2 - avSize - 20;
+  const lines = wrapText(ctx, state.comment || ' ', maxW);
+  const commentH = lines.length * lineH;
+
+  const H = pad + Math.max(avSize, 24 + 6 + commentH + 6 + metaSize + 10) + pad;
+
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(DPR, DPR);
+
+  // Background
+  ctx.clearRect(0, 0, W, H);
+  roundRect(ctx, 0, 0, W, H, preset.borderRadius);
+  ctx.fillStyle = bg;
+  ctx.fill();
+
+  // Neon glow overlay
+  if (state.preset === 'neon') {
+    const grd = ctx.createRadialGradient(W * 0.8, 0, 0, W * 0.8, 0, W * 0.9);
+    grd.addColorStop(0, 'rgba(255,79,216,0.12)');
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Brutalist stripe
+  if (state.preset === 'brutalist') {
+    ctx.fillStyle = acc;
+    ctx.fillRect(0, 0, 8, H);
+  }
+
+  // Minimal top rule
+  if (state.preset === 'minimal') {
+    ctx.fillStyle = '#111';
+    ctx.fillRect(pad, pad * 0.6, W - pad * 2, 1.5);
+  }
+
+  // Avatar
+  const avX = pad;
+  const avY = pad;
+  drawAvatar(ctx, avatarImg, state.display, avX, avY, avSize, acc);
+
+  // Right side content
+  const tx = avX + avSize + 18;
+  let ty = pad;
+
+  // Display name
+  ctx.font = `700 ${nameSize * 1.12}px ${ff}`;
+  ctx.fillStyle = fg;
+  ctx.fillText(clip(state.display || 'Name', ctx, maxW * 0.6), tx, ty + nameSize * 1.1);
+
+  // Username / handle
+  if (platform.handle && state.username) {
+    const handleX = tx + ctx.measureText(clip(state.display || 'Name', ctx, maxW * 0.6)).width + 10;
+    ctx.font = `400 ${nameSize}px ${ff}`;
+    ctx.fillStyle = sub;
+    ctx.fillText(clip(state.username, ctx, maxW * 0.35), handleX, ty + nameSize * 1.1);
+  } else if (!platform.handle && state.username) {
+    // show handle below name
+  }
+
+  // Verified badge
+  if (platform.verified && state.preset !== 'minimal') {
+    const nameW = ctx.measureText(clip(state.display || 'Name', ctx, maxW * 0.6)).width;
+    drawVerified(ctx, tx + nameW + (platform.handle ? ctx.measureText(clip(state.username, ctx, maxW * 0.35)).width + 18 : 8), ty + nameSize * 0.7, nameSize * 0.72, acc);
+  }
+
+  ty += nameSize * 1.3 + 10;
+
+  // Comment lines
+  ctx.font = `${preset.commentWeight} ${commentSize}px ${ff}`;
+  ctx.fillStyle = fg;
+
+  // Neon glow on text
+  if (state.preset === 'neon') {
+    ctx.shadowColor = acc;
+    ctx.shadowBlur = 8;
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillText(lines[i], tx, ty + i * lineH + commentSize);
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent';
+
+  ty += commentH + lineH * 0.2 + 8;
+
+  // Meta row
+  ctx.font = `400 ${metaSize}px ${ff}`;
+  ctx.fillStyle = sub;
+  const timeStr = state.time || '';
+  ctx.fillText(timeStr, tx, ty + metaSize);
+
+  // Platform action buttons
+  if (platform.replies) {
+    const tw = ctx.measureText(timeStr).width;
+    ctx.fillStyle = acc;
+    ctx.fillText(' · ' + platform.replyText, tx + tw, ty + metaSize);
+  }
+
+  // Divider line (Instagram / X style)
+  if (state.preset === 'clean' || state.preset === 'neon') {
+    ctx.strokeStyle = colorWithAlpha(sub, 0.15);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(tx, H - pad * 0.5);
+    ctx.lineTo(W - pad, H - pad * 0.5);
+    ctx.stroke();
+  }
+
+  document.getElementById('sizeNote').textContent = `${W} × ${H} px`;
+}
+
+// ── HELPERS ──
+
+function wrapText(ctx, text, maxW) {
+  if (!text) return [''];
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function clip(text, ctx, maxW) {
+  if (!text) return '';
+  let t = text;
+  while (ctx.measureText(t).width > maxW && t.length > 0) {
+    t = t.slice(0, -1);
+  }
+  if (t !== text) t += '…';
+  return t;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawAvatar(ctx, img, name, x, y, size, accent) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+
+  if (img) {
+    ctx.drawImage(img, x, y, size, size);
+  } else {
+    // Gradient placeholder
+    const grd = ctx.createLinearGradient(x, y, x + size, y + size);
+    grd.addColorStop(0, accent);
+    grd.addColorStop(1, colorWithAlpha(accent, 0.3));
+    ctx.fillStyle = grd;
+    ctx.fillRect(x, y, size, size);
+
+    // Initial
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.font = `700 ${size * 0.38}px 'Syne', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText((name || '?')[0].toUpperCase(), x + size / 2, y + size / 2);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  ctx.restore();
+
+  // Avatar ring
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+  ctx.strokeStyle = colorWithAlpha(accent, 0.25);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function drawVerified(ctx, x, y, size, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  // Simple circle with checkmark
+  ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = size * 0.14;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(size * 0.27, size * 0.52);
+  ctx.lineTo(size * 0.44, size * 0.68);
+  ctx.lineTo(size * 0.73, size * 0.36);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function colorWithAlpha(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ════════════════════════════════════════════
+//  EXPORT
+// ════════════════════════════════════════════
+function exportPNG() {
+  render(); // ensure latest
+  const DPR = 2;
+  // Grab just the card
+  const raw = state.comment || 'comment';
+  const safe = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 48)
+    || 'comment-card';
+  const filename = safe + '.png';
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  flash('Exported: ' + filename);
+}
+
+// ════════════════════════════════════════════
+//  AUTOSAVE
+// ════════════════════════════════════════════
+function save() {
+  const s = { ...state };
+  delete s.avatarSrc; // skip blob
+  try { localStorage.setItem('commentcard_v1', JSON.stringify(s)); } catch {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('commentcard_v1');
+    if (raw) {
+      const s = JSON.parse(raw);
+      Object.assign(state, s);
+    }
+  } catch {}
+}
+
+// ════════════════════════════════════════════
+//  UI SYNC
+// ════════════════════════════════════════════
+function syncInputsFromState() {
+  document.getElementById('usernameInput').value = state.username;
+  document.getElementById('displayInput').value = state.display;
+  document.getElementById('commentInput').value = state.comment;
+  document.getElementById('timeInput').value = state.time;
+  document.getElementById('bgColor').value = state.bgColor;
+  document.getElementById('textColor').value = state.textColor;
+  document.getElementById('accentColor').value = state.accentColor;
+  document.getElementById('nameColor').value = state.nameColor;
+  document.getElementById('widthRange').value = state.width;
+  document.getElementById('widthVal').textContent = state.width;
+  document.getElementById('fontRange').value = state.fontSize;
+  document.getElementById('fontVal').textContent = state.fontSize;
+  document.getElementById('bgColorHex').textContent = state.bgColor;
+  document.getElementById('textColorHex').textContent = state.textColor;
+  document.getElementById('accentColorHex').textContent = state.accentColor;
+  document.getElementById('nameColorHex').textContent = state.nameColor;
+
+  // Platform pills
+  document.querySelectorAll('.platform-pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.platform === state.platform);
+  });
+
+  // Preset buttons
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.preset === state.preset);
+  });
+
+  // Card theme toggle
+  const ct = document.getElementById('cardThemeToggle');
+  ct.classList.toggle('on', state.cardDark);
+}
+
+function applyPreset(name) {
+  const p = PRESETS[name];
+  state.bgColor = p.bgColor;
+  state.textColor = p.textColor;
+  state.accentColor = p.accentColor;
+  state.nameColor = p.nameColor;
+}
+
+// ════════════════════════════════════════════
+//  AVATAR
+// ════════════════════════════════════════════
+function loadAvatarFromFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      avatarImg = img;
+      document.getElementById('avatarPreviewImg').src = e.target.result;
+      document.getElementById('avatarPreviewImg').style.display = 'block';
+      document.getElementById('avatarPlaceholder').style.display = 'none';
+      render();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ════════════════════════════════════════════
+//  FLASH TOAST
+// ════════════════════════════════════════════
+let flashTimer;
+function flash(msg) {
+  clearTimeout(flashTimer);
+  const existing = document.querySelector('.flash');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'flash';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  flashTimer = setTimeout(() => el.remove(), 2200);
+}
+
+// ════════════════════════════════════════════
+//  LIGHT UI TOGGLE
+// ════════════════════════════════════════════
+function toggleUITheme() {
+  lightUI = !lightUI;
+  if (lightUI) {
+    document.documentElement.style.setProperty('--bg', '#f4f4f0');
+    document.documentElement.style.setProperty('--surface', '#ffffff');
+    document.documentElement.style.setProperty('--surface2', '#f0f0ec');
+    document.documentElement.style.setProperty('--border', '#e0e0d8');
+    document.documentElement.style.setProperty('--text', '#111111');
+    document.documentElement.style.setProperty('--muted', '#888880');
+    document.getElementById('themeToggleBtn').textContent = '☾ Dark UI';
+  } else {
+    document.documentElement.style.setProperty('--bg', '#0c0c0e');
+    document.documentElement.style.setProperty('--surface', '#141416');
+    document.documentElement.style.setProperty('--surface2', '#1c1c20');
+    document.documentElement.style.setProperty('--border', '#2a2a30');
+    document.documentElement.style.setProperty('--text', '#f0f0f4');
+    document.documentElement.style.setProperty('--muted', '#6b6b7a');
+    document.getElementById('themeToggleBtn').textContent = '☀ Light UI';
+  }
+}
+
+// ════════════════════════════════════════════
+//  WIRE UP EVENTS
+// ════════════════════════════════════════════
+function wire() {
+  const deferRender = debounce(render, 80);
+
+  // Text inputs
+  ['usernameInput', 'displayInput', 'commentInput', 'timeInput'].forEach(id => {
+    document.getElementById(id).addEventListener('input', e => {
+      const map = { usernameInput: 'username', displayInput: 'display', commentInput: 'comment', timeInput: 'time' };
+      state[map[id]] = e.target.value;
+      save(); deferRender();
+    });
+  });
+
+  // Colors
+  ['bgColor', 'textColor', 'accentColor', 'nameColor'].forEach(id => {
+    document.getElementById(id).addEventListener('input', e => {
+      const map = { bgColor: 'bgColor', textColor: 'textColor', accentColor: 'accentColor', nameColor: 'nameColor' };
+      state[map[id]] = e.target.value;
+      document.getElementById(id + 'Hex').textContent = e.target.value;
+      save(); deferRender();
+    });
+  });
+
+  // Sliders
+  document.getElementById('widthRange').addEventListener('input', e => {
+    state.width = +e.target.value;
+    document.getElementById('widthVal').textContent = state.width;
+    save(); deferRender();
+  });
+
+  document.getElementById('fontRange').addEventListener('input', e => {
+    state.fontSize = +e.target.value;
+    document.getElementById('fontVal').textContent = state.fontSize;
+    save(); deferRender();
+  });
+
+  // Platform pills
+  document.getElementById('platformRow').addEventListener('click', e => {
+    const btn = e.target.closest('.platform-pill');
+    if (!btn) return;
+    state.platform = btn.dataset.platform;
+    syncInputsFromState();
+    save(); render();
+  });
+
+  // Presets
+  document.getElementById('presetsGrid').addEventListener('click', e => {
+    const btn = e.target.closest('.preset-btn');
+    if (!btn) return;
+    state.preset = btn.dataset.preset;
+    applyPreset(state.preset);
+    syncInputsFromState();
+    save(); render();
+  });
+
+  // Card theme toggle
+  document.getElementById('cardThemeToggle').addEventListener('click', () => {
+    state.cardDark = !state.cardDark;
+    if (state.cardDark) {
+      state.bgColor = PRESETS[state.preset].bgColor;
+      state.textColor = PRESETS[state.preset].textColor;
+    } else {
+      // invert bg/text
+      state.bgColor = PRESETS[state.preset].textColor;
+      state.textColor = PRESETS[state.preset].bgColor;
+    }
+    syncInputsFromState();
+    save(); render();
+  });
+
+  // Avatar file
+  document.getElementById('avatarFile').addEventListener('change', e => {
+    loadAvatarFromFile(e.target.files[0]);
+  });
+
+  // Drag-and-drop
+  const zone = document.getElementById('avatarZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    loadAvatarFromFile(file);
+  });
+
+  // Paste
+  window.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        loadAvatarFromFile(item.getAsFile());
+        break;
+      }
+    }
+  });
+
+  // Export
+  document.getElementById('exportBtn').addEventListener('click', exportPNG);
+  document.getElementById('exportBtn2').addEventListener('click', exportPNG);
+
+  // Reset
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    Object.assign(state, DEFAULT);
+    avatarImg = null;
+    document.getElementById('avatarPreviewImg').style.display = 'none';
+    document.getElementById('avatarPlaceholder').style.display = 'flex';
+    try { localStorage.removeItem('commentcard_v1'); } catch {}
+    syncInputsFromState();
+    render();
+    flash('Reset to defaults');
+  });
+
+  // UI theme
+  document.getElementById('themeToggleBtn').addEventListener('click', toggleUITheme);
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); exportPNG(); }
+  });
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+(function init() {
+  load();
+  syncInputsFromState();
+  wire();
+
+  // Load Google Fonts
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap';
+  document.head.appendChild(link);
+  link.onload = render;
+
+  // Render with system fonts as fallback immediately
+  render();
+})();
+</script>
+</body>
+</html>
